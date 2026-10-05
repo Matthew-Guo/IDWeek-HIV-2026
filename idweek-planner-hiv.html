@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#343741">
+<title>IDWeek Planner: HIV &mdash; Shift Health</title>
+<style>
+:root{
+  --brand-dark:#343741;      /* logo cls-1 */
+  --brand-teal:#20aa97;      /* logo cls-2 */
+  --teal-deep:#0B5F53;
+  --teal-tint:#E6F6F3;
+  --ink:#343741;
+  --muted:#5C626E;
+  --line:#D9DCE1;
+  --bg:#FFFFFF;
+  --panel:#F6F7F8;
+  --lw:130px;
+  --ind-box:#1F2128;
+  --ind-gold:#F2C14E;
+  --warn-fill:#FDF0DC;       /* concurrency only */
+  --warn-line:#E0A458;
+  --warn-ink:#8A4B00;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;max-width:100%;overflow-x:hidden}
+body{background:var(--bg);color:var(--ink);
+  padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px);
+  font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+  -webkit-text-size-adjust:100%}
+.wrap{max-width:1280px;margin:0 auto;padding:0 14px 64px}
+
+/* ---------- header ---------- */
+header.hd{display:flex;align-items:center;gap:16px;padding:18px 0 14px;border-bottom:3px solid var(--brand-dark)}
+.logo{width:132px;flex:0 0 132px}
+.logo svg{display:block;width:100%;height:auto}
+.hd h1{margin:0;font-size:19px;line-height:1.25;font-weight:700;letter-spacing:-.01em}
+.hd .sub{margin:3px 0 0;font-size:12.5px;color:var(--muted);font-weight:500}
+
+/* ---------- filters ---------- */
+.filters{position:sticky;top:0;z-index:40;background:var(--bg);
+  border-bottom:2px solid var(--brand-teal);padding:10px 0 9px;margin-bottom:6px}
+.frow{display:flex;flex-wrap:wrap;gap:7px;align-items:center;margin-bottom:7px}
+.frow:last-child{margin-bottom:0}
+.flab{font-size:10.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--brand-teal);margin-right:3px}
+button.chip,select.chip,input.chip{font:inherit;font-size:13px;background:#fff;color:var(--ink);
+  border:1.5px solid var(--line);border-radius:999px;padding:7px 13px;cursor:pointer;
+  min-height:38px;-webkit-appearance:none;appearance:none}
+select.chip{border-radius:8px;padding-right:28px;
+  background-image:linear-gradient(45deg,transparent 50%,var(--brand-dark) 50%),linear-gradient(135deg,var(--brand-dark) 50%,transparent 50%);
+  background-position:calc(100% - 15px) 17px,calc(100% - 10px) 17px;
+  background-size:5px 5px,5px 5px;background-repeat:no-repeat}
+input.chip{border-radius:8px;cursor:text;min-width:190px;flex:1 1 190px;max-width:360px}
+button.chip:hover{border-color:var(--brand-teal)}
+button.chip[aria-pressed="true"]{background:var(--brand-dark);border-color:var(--brand-dark);color:#fff;font-weight:600}
+button.chip.tgl[aria-pressed="true"]{background:var(--teal-deep);border-color:var(--teal-deep)}
+.sh{display:none}
+.count{font-size:13px;font-weight:600;color:var(--muted);margin-left:auto;white-space:nowrap}
+.count b{color:var(--brand-dark);font-size:15px}
+.catwrap{position:relative;display:inline-block}
+.catmenu{position:absolute;top:calc(100% + 5px);left:0;z-index:60;background:#fff;
+  border:1.5px solid var(--brand-dark);border-radius:10px;padding:8px;
+  width:min(330px,calc(100vw - 28px));max-height:52vh;overflow-y:auto;
+  box-shadow:0 8px 24px rgba(52,55,65,.18)}
+.catmenu[hidden]{display:none}
+.catacts{display:flex;gap:6px;padding:0 2px 8px;border-bottom:1px solid var(--line);margin-bottom:6px}
+.catacts button{font:inherit;font-size:12px;font-weight:600;background:#fff;color:var(--teal-deep);
+  border:1.5px solid var(--brand-teal);border-radius:999px;padding:5px 11px;cursor:pointer;min-height:32px}
+.catmenu label{display:flex;align-items:center;gap:9px;padding:8px 6px;border-radius:6px;
+  font-size:13.5px;cursor:pointer;line-height:1.25;min-height:40px}
+.catmenu label:hover{background:var(--teal-tint)}
+.catmenu input{width:18px;height:18px;flex:0 0 18px;accent-color:var(--teal-deep);margin:0}
+.catmenu .cn{margin-left:auto;font-size:12px;font-weight:700;color:var(--muted);padding-left:8px}
+.catmenu .ct{overflow-wrap:anywhere}
+button.chip#f-cat-btn[aria-pressed="true"]{background:var(--teal-deep);border-color:var(--teal-deep);color:#fff}
+.jump{display:flex;flex-wrap:wrap;gap:7px;align-items:center}
+.jump a{font-size:12.5px;color:var(--teal-deep);text-decoration:none;border-bottom:1.5px solid var(--brand-teal);padding-bottom:1px}
+
+/* ---------- coverage panel ---------- */
+details.panel{border:1.5px solid var(--line);border-left:5px solid var(--brand-teal);
+  border-radius:10px;margin:14px 0 8px;background:var(--panel);overflow:hidden}
+details.panel > summary{list-style:none;cursor:pointer;padding:11px 15px;min-height:44px;
+  display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;
+  letter-spacing:.05em;text-transform:uppercase;color:var(--brand-teal)}
+details.panel > summary::-webkit-details-marker{display:none}
+details.panel > summary::before{content:"\25B8";font-size:12px;transition:transform .15s}
+details.panel[open] > summary::before{transform:rotate(90deg)}
+details.panel > summary .sm{text-transform:none;letter-spacing:0;font-weight:600;color:var(--muted);font-size:12px}
+.pbody{padding:0 16px 14px}
+.panel h3{margin:13px 0 5px;font-size:12.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--brand-dark)}
+.pbody h3:first-child{margin-top:0}
+.panel ul{margin:0;padding-left:17px}
+.panel li{margin:0 0 5px;font-size:13.5px;overflow-wrap:anywhere}
+.panel .cost{font-weight:700;color:var(--warn-ink);white-space:nowrap}
+.panel .none{color:var(--muted);font-size:13.5px;margin:0}
+
+/* ---------- day ---------- */
+.day{margin-top:26px;scroll-margin-top:150px}
+.day > h2{margin:0 0 10px;padding-bottom:7px;font-size:17px;font-weight:700;
+  border-bottom:2px solid var(--brand-dark);color:var(--brand-dark)}
+
+/* ---------- timeline (desktop lanes) ---------- */
+.tl{border:1.5px solid var(--line);border-radius:10px;padding:10px 12px 12px;margin-bottom:16px;background:#fff}
+.axis{position:relative;height:17px;margin-left:var(--lw);border-bottom:1px solid var(--line)}
+.axis span{position:absolute;top:0;font-size:10.5px;color:var(--muted);transform:translateX(-50%);white-space:nowrap}
+.lane{display:flex;align-items:stretch;border-bottom:1px solid #EEF0F2;min-height:30px}
+.lane:last-child{border-bottom:0}
+.lname{flex:0 0 var(--lw);width:var(--lw);padding:7px 9px 7px 0;font-size:11.5px;font-weight:600;
+  color:var(--teal-deep);line-height:1.2;overflow-wrap:anywhere}
+.track{position:relative;flex:1 1 auto;min-width:0}
+.blk{position:absolute;top:5px;bottom:5px;border-radius:4px;font-size:10.5px;line-height:1.15;
+  padding:3px 4px;overflow:hidden;cursor:pointer;min-width:3px}
+.blk.hi{background:var(--brand-dark);color:#fff;border:1.5px solid var(--brand-dark)}
+.blk.me{background:#fff;color:var(--brand-dark);border:1.5px solid var(--brand-dark)}
+.blk.po{background:#fff;color:var(--brand-dark);border:1.5px dashed var(--brand-dark)}
+.blk:focus{outline:2px solid var(--brand-teal);outline-offset:1px}
+.rail{position:absolute;bottom:0;height:3px;background:var(--brand-teal);opacity:.55}
+.tick{position:absolute;bottom:0;width:1px;height:9px;background:var(--brand-dark)}
+.band{position:absolute;top:0;bottom:0;background:var(--warn-fill);border-left:1px solid var(--warn-line);
+  border-right:1px solid var(--warn-line);z-index:0;pointer-events:none}
+.lanes{position:relative}
+.lane{position:relative;z-index:1}
+.bandlayer{position:absolute;left:var(--lw);right:0;top:0;bottom:0;z-index:0;pointer-events:none}
+.cap{margin-top:9px;padding:9px 11px;border:1.5px solid var(--brand-teal);border-radius:8px;
+  font-size:12.5px;background:var(--teal-tint);color:var(--brand-dark)}
+.cap:empty{display:none}
+
+/* ---------- ribbon (mobile) ---------- */
+.ribbon{display:none}
+
+/* ---------- list ---------- */
+.slot{margin:16px 0 0}
+.slot > h3{margin:0 0 6px;font-size:14px;font-weight:700;color:var(--brand-dark);
+  border-left:4px solid var(--brand-teal);padding-left:9px}
+details.notebox{margin:0 0 8px 13px;border:1px solid var(--warn-line);border-radius:6px;
+  background:var(--warn-fill);color:var(--warn-ink);font-size:12.5px;overflow:hidden}
+details.notebox > summary{list-style:none;cursor:pointer;padding:6px 10px;font-weight:700;
+  display:flex;align-items:center;gap:7px;min-height:32px}
+details.notebox > summary::-webkit-details-marker{display:none}
+details.notebox > summary::before{content:"\25B8";font-size:11px;transition:transform .15s}
+details.notebox[open] > summary::before{transform:rotate(90deg)}
+details.notebox ul{margin:0;padding:0 12px 9px 30px}
+details.notebox li{margin:0 0 4px;font-weight:500;overflow-wrap:anywhere}
+.sess{margin:0 0 12px 13px;border-left:1.5px solid var(--line);padding-left:11px}
+.shd{margin-bottom:6px}
+.smeta{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--brand-teal)}
+.stitle{font-size:14px;font-weight:700;margin-top:1px;overflow-wrap:anywhere}
+.sroom{font-size:12px;color:var(--muted);margin-top:1px}
+.item{border-radius:6px;padding:9px 11px;margin-bottom:6px;font-size:13.5px}
+.item.hi{background:var(--brand-dark);color:#fff}
+.item.me{background:#fff;color:var(--brand-dark);border:1.5px solid var(--brand-dark)}
+.item .ttl{font-weight:600;line-height:1.3;overflow-wrap:anywhere}
+.item .l1{overflow-wrap:anywhere;font-size:11.5px;font-weight:700;letter-spacing:.04em;margin-bottom:2px;opacity:.85}
+.item .l2{font-size:12px;margin-top:4px;line-height:1.35;opacity:.92;overflow-wrap:anywhere}
+.item.hi .l2{color:#E8EAED}
+.item.me .l2{color:var(--muted)}
+.ind{display:inline-block;background:var(--ind-box);color:var(--ind-gold);
+  border:1px solid rgba(242,193,78,.45);border-radius:4px;padding:1px 6px;
+  font-weight:700;letter-spacing:.01em;overflow-wrap:anywhere}
+.item.hi .l2 .ind{color:var(--ind-gold)}
+/* ---------- annotations ---------- */
+details.ann{margin-top:7px;border-top:1px solid rgba(255,255,255,.22);padding-top:6px}
+.item.me details.ann{border-top-color:var(--line)}
+details.ann > summary{list-style:none;cursor:pointer;font-size:11.5px;font-weight:700;
+  letter-spacing:.03em;display:flex;align-items:center;gap:6px;min-height:28px;opacity:.9}
+details.ann > summary::-webkit-details-marker{display:none}
+details.ann > summary::before{content:"\25B8";font-size:10px;transition:transform .15s}
+details.ann[open] > summary::before{transform:rotate(90deg)}
+.owner{display:inline-block;background:var(--brand-teal);color:#08302A;border-radius:4px;
+  padding:1px 7px;font-weight:700;font-size:11px;overflow-wrap:anywhere}
+.notemark{font-weight:600;opacity:.85}
+.annbody{display:flex;flex-wrap:wrap;gap:7px;margin-top:7px}
+.ann-o,.ann-n{font:inherit;font-size:13px;background:#fff;color:var(--ink);
+  border:1.5px solid var(--line);border-radius:6px;padding:8px 10px;min-height:40px}
+.ann-o{flex:0 0 auto;max-width:100%;-webkit-appearance:none;appearance:none;padding-right:26px;
+  background-image:linear-gradient(45deg,transparent 50%,var(--brand-dark) 50%),linear-gradient(135deg,var(--brand-dark) 50%,transparent 50%);
+  background-position:calc(100% - 14px) 18px,calc(100% - 9px) 18px;background-size:5px 5px,5px 5px;background-repeat:no-repeat}
+.ann-n{flex:1 1 220px;min-width:0;resize:vertical;line-height:1.35}
+.annprint{display:none}
+.covrow{border-top:1px dashed var(--line);padding-top:8px;margin-top:2px}
+.syncst{font-size:11.5px;font-weight:600;color:var(--muted);white-space:nowrap}
+.syncst:empty{display:none}
+#f-cov{min-width:170px}
+.warnbar{margin:10px 0 0;padding:8px 11px;border:1.5px solid var(--warn-line);border-radius:8px;
+  background:var(--warn-fill);color:var(--warn-ink);font-size:12.5px;font-weight:600}
+.empty{padding:28px 10px;text-align:center;color:var(--muted);font-size:14px}
+
+/* ---------- mobile ---------- */
+@media (max-width:760px){
+  body{font-size:15px}
+  .wrap{padding:0 11px 56px}
+  header.hd{gap:12px;padding:14px 0 11px}
+  .logo{width:104px;flex:0 0 104px}
+  .hd h1{font-size:16px}
+  .filters{padding:9px 0 8px}
+  .frow{gap:6px}
+  button.chip,select.chip,input.chip{font-size:13.5px;min-height:40px;padding:8px 12px}
+  .catwrap{flex:1 1 150px;min-width:140px}
+  .catwrap>button.chip{width:100%;text-align:left}
+  input.chip{flex:1 1 100%;max-width:none}
+  .count{margin-left:auto;font-size:12.5px}
+  .filters{padding-top:calc(8px + env(safe-area-inset-top,0px))}
+  .jump{display:none!important}
+  .flab{font-size:10px;margin-right:1px}
+  .lg{display:none}
+  .sh{display:inline}
+  .tl{display:none}
+  .ribbon{display:block;border:1.5px solid var(--line);border-radius:10px;
+    padding:9px 11px 11px;margin-bottom:14px;background:#fff}
+  .rbaxis{position:relative;height:15px;border-bottom:1px solid var(--line);margin-bottom:5px}
+  .rbaxis span{position:absolute;top:0;font-size:10px;color:var(--muted);transform:translateX(-50%)}
+  .rbbands{position:relative;height:13px}
+  .rbtrack{position:relative;height:40px;margin-top:2px}
+  .rbseg{position:absolute;top:0;bottom:0;border-radius:4px;cursor:pointer;min-width:4px}
+  .rbseg.hi{background:var(--brand-dark);border:1.5px solid var(--brand-dark)}
+  .rbseg.me{background:#fff;border:1.5px solid var(--brand-dark)}
+  .rbseg.po{background:repeating-linear-gradient(45deg,#fff,#fff 3px,#C7CBD1 3px,#C7CBD1 5px);
+    border:1.5px dashed var(--brand-dark)}
+  .rbseg:focus{outline:2px solid var(--brand-teal);outline-offset:1px}
+  .rblab{font-size:10.5px;color:var(--muted);margin-top:5px}
+  .sess{margin-left:0;padding-left:9px}
+  .ann-o{flex:1 1 100%}
+  .ann-n{flex:1 1 100%}
+  details.notebox{margin-left:0}
+  .day > h2{font-size:16px}
+  .item{padding:10px 12px}
+}
+@media (max-width:420px){
+  .logo{width:88px;flex:0 0 88px}
+  .hd h1{font-size:15px}
+}
+
+/* ---------- print ---------- */
+@media print{
+  @page{margin:12mm}
+  body{font-size:10pt}
+  .filters,.jump{display:none!important}
+  .ribbon{display:none!important}
+  .tl{display:block!important;page-break-inside:avoid}
+  .wrap{max-width:none;padding:0}
+  .day{page-break-before:auto}
+  .sess,.item,details.panel{page-break-inside:avoid}
+  details.panel[open]>.pbody,details.notebox[open]{display:block}
+  .blk.hi,.item.hi{background:var(--brand-dark)!important;color:#fff!important;
+    -webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .blk.me,.item.me{border-color:var(--brand-dark)!important;
+    -webkit-print-color-adjust:exact;print-color-adjust:exact}
+  details.ann>summary,.annbody{display:none!important}
+  details.ann{border-top:1px solid var(--line)}
+  .annprint{display:block!important;font-size:9pt;margin-top:4px}
+  .band,details.notebox,.ind{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .logo svg{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  a{text-decoration:none;color:inherit}
+}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+
+<header class="hd">
+  <div class="logo"><svg xmlns="http://www.w3.org/2000/svg" id="Layer_1" data-name="Layer 1" viewBox="0 0 311.16 134.47"><defs><style>.cls-1{fill:#343741;}.cls-2{fill:#20aa97;}</style></defs><title>Shift-Health-Logo</title><rect class="cls-1" x="44.01" y="43.61" width="13.93" height="13.93" rx="2" transform="translate(-22.95 49.33) rotate(-45)"></rect><path class="cls-2" d="M77.76,63a3.1,3.1,0,0,0,0,4.39l16.8,16.79a1,1,0,0,0,1.41,0l3.51-3.51a1,1,0,0,0,0-1.41L86.65,66.47a1.75,1.75,0,0,1,0-2.47L99.47,51.18a1,1,0,0,0,0-1.41L96,46.25a1,1,0,0,0-1.41,0Z" transform="translate(-2.12 -1.53)"></path><path class="cls-2" d="M77.35,53.59l-9.9,9.91a2.46,2.46,0,0,0,0,3.48l7.16,7.16,20,20a1,1,0,0,1,0,1.42L91.09,99a1,1,0,0,1-1.41,0l-29.6-29.6a6,6,0,0,1,0-8.47l29.51-29.5a1,1,0,0,1,1.41,0L94.51,35a1,1,0,0,1,0,1.41Z" transform="translate(-2.12 -1.53)"></path><path class="cls-2" d="M24.23,37.76a3.09,3.09,0,0,0,0-4.38L7.44,16.58a1,1,0,0,0-1.41,0L2.51,20.09a1,1,0,0,0,0,1.42L15.35,34.33a1.75,1.75,0,0,1,0,2.47L2.52,49.63a1,1,0,0,0,0,1.41L6,54.55a1,1,0,0,0,1.41,0Z" transform="translate(-2.12 -1.53)"></path><path class="cls-2" d="M24.68,47.24l9.9-9.9a2.44,2.44,0,0,0,.72-1.74,2.41,2.41,0,0,0-.72-1.74L27.42,26.7l-20-20a1,1,0,0,1,0-1.41l3.51-3.51a1,1,0,0,1,1.41,0L42,31.42a6,6,0,0,1,0,8.47L12.44,69.39a1,1,0,0,1-1.41,0L7.52,65.88a1,1,0,0,1,0-1.41Z" transform="translate(-2.12 -1.53)"></path><path class="cls-1" d="M63.64,23.67a3.09,3.09,0,0,0,4.38,0L84.82,6.88a1,1,0,0,0,0-1.42L81.31,2a1,1,0,0,0-1.42,0L67.07,14.79a1.77,1.77,0,0,1-2.47,0L51.77,2a1,1,0,0,0-1.41,0L46.85,5.48a1,1,0,0,0,0,1.41Z" transform="translate(-2.12 -1.53)"></path><path class="cls-1" d="M54.19,24.08,64.1,34a2.46,2.46,0,0,0,3.48,0l7.16-7.16,20-20a1,1,0,0,1,1.41,0l3.51,3.51a1,1,0,0,1,0,1.41L70,41.35a6,6,0,0,1-8.47,0L32,11.85a1,1,0,0,1,0-1.42l3.51-3.51a1,1,0,0,1,1.42,0Z" transform="translate(-2.12 -1.53)"></path><path class="cls-1" d="M38.36,77.2a3.1,3.1,0,0,0-4.39,0L17.18,94a1,1,0,0,0,0,1.41l3.51,3.51a1,1,0,0,0,1.41,0L34.93,86.09a1.75,1.75,0,0,1,2.47,0L50.22,98.91a1,1,0,0,0,1.41,0l3.52-3.51a1,1,0,0,0,0-1.41Z" transform="translate(-2.12 -1.53)"></path><path class="cls-1" d="M47.84,76.76l-9.91-9.91a2.46,2.46,0,0,0-3.48,0L27.29,74,7.34,94a1,1,0,0,1-1.41,0L2.42,90.5a1,1,0,0,1,0-1.42L32,59.49a6,6,0,0,1,8.47,0L70,89a1,1,0,0,1,0,1.41l-3.51,3.52a1,1,0,0,1-1.42,0Z" transform="translate(-2.12 -1.53)"></path><path class="cls-1" d="M117.34,44.81c2.07,6.1,5.51,10.71,11.13,10.71a7.27,7.27,0,0,0,7.47-7.05c0-4.24-4.08-5.94-5.88-6.68-1.48-.58-3.07-1-4.56-1.64-3.07-1.11-8.85-3.5-8.85-10.76,0-7,5.51-10.92,11.93-10.92A15.52,15.52,0,0,1,137.16,21l2.28-1.65,1.22,11.13-1.85.38a16,16,0,0,0-2.6-6.21,9.46,9.46,0,0,0-7.32-4.07,6.22,6.22,0,0,0-6.3,6.2c0,4.45,4.4,5.93,8.58,7.31a27.55,27.55,0,0,1,5.41,2.17A10.88,10.88,0,0,1,142,45.82c0,6.47-5.3,11.82-13.2,11.82a16.9,16.9,0,0,1-9.7-3l-2.81,2A104.28,104.28,0,0,0,115.43,45Z" transform="translate(-2.12 -1.53)"></path><path class="cls-1" d="M142.89,20a55.28,55.28,0,0,0,9.86-2.86c.11,3.28.11,3.6.16,7.31V35.75c2.28-1.69,4.5-3.28,7.79-3.28A8.13,8.13,0,0,1,165.63,34c2.86,2.23,2.92,5.19,3,9.12v6.15c0,5.09,0,5.51,3.46,5.56v1.86c-2.23,0-4.51,0-6.74,0s-4.29,0-6.47,0V54.83c3.08,0,3.29,0,3.29-7,0-7.74-.74-12-4.67-12-1.79,0-3.38,1.27-4.55,2.23V50.22c0,4.14,0,4.61,3.39,4.61v1.86c-2.22,0-4.45,0-6.68,0s-4.5,0-6.73,0V54.83a5,5,0,0,0,2.55-.42c.84-.58.84-.8.9-5.46V35.75c-.06-7.95-.06-8.8-.06-9.7-.05-3-.84-3.92-3.39-4.77Z" transform="translate(-2.12 -1.53)"></path><path class="cls-1" d="M173.15,35.17a48.1,48.1,0,0,0,10.23-2.76c-.11,2.6-.16,3.45-.16,8.54v9.8c0,3.5.11,4,3.39,4.08v1.86c-2.59,0-4.55-.11-6.62-.11-2.28,0-4.56.06-6.84.11V54.83c3.45-.11,3.45-.53,3.5-4.82V40.79c-.05-2.81-.53-3.18-3.5-4.35Zm3.13-11.61a3.77,3.77,0,0,1,7.53,0A3.75,3.75,0,0,1,180,27.32a3.87,3.87,0,0,1-2.65-1.11A3.76,3.76,0,0,1,176.28,23.56Z" transform="translate(-2.12 -1.53)"></path><path class="cls-1" d="M198,33.31h5.2v2.87H198v14c.06,4.34.42,4.61,4.35,4.66v1.86c-2.33,0-4.88-.16-7.31-.16s-4.93.11-7.48.16V54.83c3.87,0,3.87-.85,3.92-4.18l.11-14.47h-4l1.06-2.87h3c.16-4.82.26-7.68,2.17-10.7A12.37,12.37,0,0,1,204.3,17c4.76,0,6.78,1.86,6.78,4.08a2.44,2.44,0,0,1-2.44,2.6,3.28,3.28,0,0,1-2.17-1.06c-.48-.53-.9-1.06-1.38-1.59A4.42,4.42,0,0,0,202,19.53c-3.87,0-3.87,4.51-3.93,9.17Z" transform="translate(-2.12 -1.53)"></path><path class="cls-1" d="M206,33.3c3.52-3.49,3.74-3.86,5.88-8.31h.69l-.11,8.32h5.45l-1.06,2.76h-4.39l-.1,11.87c0,1.86-.06,5.89,3.71,5.89a5.59,5.59,0,0,0,3.6-1.65V54a8.88,8.88,0,0,1-7.16,3.24A7,7,0,0,1,206.8,55c-1.12-1.43-1.12-3.08-1-6.25L206,36.07Z" transform="translate(-2.12 -1.53)"></path><path class="cls-1" d="M117.17,83.42A.58.58,0,0,1,117,83V65.7a.69.69,0,0,1,.17-.48.6.6,0,0,1,.47-.19h2.44a.63.63,0,0,1,.66.67v6.82h7.75V65.7a.65.65,0,0,1,.18-.48.62.62,0,0,1,.46-.19h2.46a.6.6,0,0,1,.47.19.69.69,0,0,1,.17.48V83a.64.64,0,0,1-.17.45.6.6,0,0,1-.47.19h-2.46a.62.62,0,0,1-.46-.19.61.61,0,0,1-.18-.45V75.88h-7.75V83a.61.61,0,0,1-.18.45.65.65,0,0,1-.48.19h-2.44A.58.58,0,0,1,117.17,83.42Z" transform="translate(-2.12 -1.53)"></path><path class="cls-1" d="M136.11,83.42a.58.58,0,0,1-.19-.45V65.7a.69.69,0,0,1,.17-.48.6.6,0,0,1,.47-.19h11.7a.63.63,0,0,1,.66.67v1.77a.63.63,0,0,1-.18.47.72.72,0,0,1-.48.17h-8.7v4.64h8.12a.65.65,0,0,1,.47.19.62.62,0,0,1,.19.48v1.67a.58.58,0,0,1-.19.46.64.64,0,0,1-.47.18h-8.12v4.8h8.91a.7.7,0,0,1,.48.17.63.63,0,0,1,.18.47V83a.6.6,0,0,1-.18.46.66.66,0,0,1-.48.18H136.56A.58.58,0,0,1,136.11,83.42Z" transform="translate(-2.12 -1.53)"></path><path class="cls-1" d="M151.22,83.45a.54.54,0,0,1-.16-.4l.05-.24,6.37-17.11a1,1,0,0,1,1-.67h2.91a1,1,0,0,1,1,.67l6.37,17.11,0,.24a.54.54,0,0,1-.17.4.59.59,0,0,1-.39.16h-2.36a.77.77,0,0,1-.77-.51l-1.22-3.21H156l-1.22,3.21a.77.77,0,0,1-.77.51h-2.36A.56.56,0,0,1,151.22,83.45Zm5.68-6.64h6l-3-8.17Z" transform="translate(-2.12 -1.53)"></path><path class="cls-1" d="M171.51,83.42a.61.61,0,0,1-.18-.45V65.67a.63.63,0,0,1,.18-.47A.68.68,0,0,1,172,65h2.5a.64.64,0,0,1,.46.17.62.62,0,0,1,.17.47V80.42h8.42a.61.61,0,0,1,.47.19.58.58,0,0,1,.19.45V83a.58.58,0,0,1-.19.45.61.61,0,0,1-.47.19H172A.61.61,0,0,1,171.51,83.42Z" transform="translate(-2.12 -1.53)"></path><path class="cls-1" d="M187.56,83.42a.58.58,0,0,1-.19-.45V68.35h-4.91a.58.58,0,0,1-.45-.19.64.64,0,0,1-.18-.47v-2a.64.64,0,0,1,.17-.48.58.58,0,0,1,.46-.19H196a.63.63,0,0,1,.48.19.65.65,0,0,1,.18.48v2a.64.64,0,0,1-.18.47.63.63,0,0,1-.48.19h-4.88V83a.64.64,0,0,1-.17.45.6.6,0,0,1-.47.19H188A.58.58,0,0,1,187.56,83.42Z" transform="translate(-2.12 -1.53)"></path><path class="cls-1" d="M199.44,83.42a.62.62,0,0,1-.19-.45V65.7a.65.65,0,0,1,.18-.48.58.58,0,0,1,.46-.19h2.44a.62.62,0,0,1,.48.19.65.65,0,0,1,.18.48v6.82h7.75V65.7a.62.62,0,0,1,.19-.48.58.58,0,0,1,.45-.19h2.47a.58.58,0,0,1,.46.19.64.64,0,0,1,.17.48V83a.6.6,0,0,1-.17.45.58.58,0,0,1-.46.19h-2.47a.65.65,0,0,1-.64-.64V75.88H203V83a.61.61,0,0,1-.18.45.62.62,0,0,1-.48.19h-2.44A.58.58,0,0,1,199.44,83.42Z" transform="translate(-2.12 -1.53)"></path><path class="cls-1" d="M116.37,135.6a.49.49,0,0,1-.15-.35l0-.28,6.33-16.25a.74.74,0,0,1,.73-.5h.85a.74.74,0,0,1,.73.5L131.24,135l0,.28a.49.49,0,0,1-.15.35.47.47,0,0,1-.35.15h-.5a.48.48,0,0,1-.36-.13.62.62,0,0,1-.19-.25l-1.55-4h-8.87l-1.55,4a.62.62,0,0,1-.19.25.48.48,0,0,1-.36.13h-.5A.47.47,0,0,1,116.37,135.6Zm3.55-5.74h7.67L123.75,120Z" transform="translate(-2.12 -1.53)"></path><path class="cls-1" d="M139.84,135.45a5.11,5.11,0,0,1-1.68-1.25,2.11,2.11,0,0,1-.56-1.13.43.43,0,0,1,.18-.36.59.59,0,0,1,.37-.14h.38a.65.65,0,0,1,.29.06,1,1,0,0,1,.26.26,4,4,0,0,0,1.34,1.22,4.49,4.49,0,0,0,2.16.44,4.76,4.76,0,0,0,2.51-.59,1.88,1.88,0,0,0,.95-1.69,1.56,1.56,0,0,0-.39-1.1,3,3,0,0,0-1.25-.74,24.85,24.85,0,0,0-2.57-.72,6,6,0,0,1-3-1.37,3.17,3.17,0,0,1-.81-2.23,3.32,3.32,0,0,1,.51-1.76A3.76,3.76,0,0,1,140,123a5.23,5.23,0,0,1,2.44-.52A5.72,5.72,0,0,1,145,123a4.27,4.27,0,0,1,1.55,1.19,2,2,0,0,1,.52,1.1.45.45,0,0,1-.17.36.51.51,0,0,1-.38.14h-.38a.63.63,0,0,1-.55-.32,3.64,3.64,0,0,0-1.14-1.14,3.94,3.94,0,0,0-2-.39,3.45,3.45,0,0,0-2.2.6,1.91,1.91,0,0,0-.76,1.58,1.63,1.63,0,0,0,.3,1,2.75,2.75,0,0,0,1.13.74,16.93,16.93,0,0,0,2.41.69,7.27,7.27,0,0,1,3.28,1.4,3,3,0,0,1,.95,2.33,3.26,3.26,0,0,1-.58,1.88,3.9,3.9,0,0,1-1.7,1.35,6.69,6.69,0,0,1-2.71.5A6.11,6.11,0,0,1,139.84,135.45Z" transform="translate(-2.12 -1.53)"></path><path class="cls-1" d="M151.05,134.48a6.2,6.2,0,0,1-1.5-4.24l0-1,0-1a6.23,6.23,0,0,1,1.5-4.25,5.26,5.26,0,0,1,4-1.51,6.25,6.25,0,0,1,2.82.58,4.41,4.41,0,0,1,1.74,1.51,3.88,3.88,0,0,1,.62,1.89.43.43,0,0,1-.15.39.59.59,0,0,1-.4.16h-.35a.52.52,0,0,1-.36-.11,1.29,1.29,0,0,1-.24-.42,3.78,3.78,0,0,0-1.4-2,4.11,4.11,0,0,0-2.28-.59,3.82,3.82,0,0,0-2.87,1.09,4.86,4.86,0,0,0-1.14,3.34l0,.88,0,.87a4.87,4.87,0,0,0,1.14,3.35,3.86,3.86,0,0,0,2.87,1.09,4.11,4.11,0,0,0,2.28-.59,3.77,3.77,0,0,0,1.4-2,1.22,1.22,0,0,1,.24-.41.47.47,0,0,1,.36-.11h.35a.55.55,0,0,1,.4.16.43.43,0,0,1,.15.39,3.88,3.88,0,0,1-.62,1.89,4.31,4.31,0,0,1-1.74,1.5,6.25,6.25,0,0,1-2.82.59A5.26,5.26,0,0,1,151.05,134.48Z" transform="translate(-2.12 -1.53)"></path><path class="cls-1" d="M162.44,119.9a.55.55,0,0,1-.15-.4v-1a.6.6,0,0,1,.15-.42.51.51,0,0,1,.4-.16h.95a.53.53,0,0,1,.41.16.57.57,0,0,1,.17.42v1a.53.53,0,0,1-.17.4.56.56,0,0,1-.41.15h-.95A.54.54,0,0,1,162.44,119.9Zm.27,15.7a.54.54,0,0,1-.15-.4V123.28a.54.54,0,0,1,.15-.4.55.55,0,0,1,.4-.15h.43a.52.52,0,0,1,.55.55V135.2a.52.52,0,0,1-.55.55h-.43A.55.55,0,0,1,162.71,135.6Z" transform="translate(-2.12 -1.53)"></path><path class="cls-1" d="M167.77,134.43a6.66,6.66,0,0,1-1.65-4.19l0-1,0-1a6.78,6.78,0,0,1,1.64-4.19,5,5,0,0,1,3.84-1.57,5,5,0,0,1,4.07,1.72,7.09,7.09,0,0,1,1.47,4.74v.37a.54.54,0,0,1-.16.4.6.6,0,0,1-.42.15h-8.91v.25a5.45,5.45,0,0,0,.54,2.2,4.07,4.07,0,0,0,1.36,1.62,3.48,3.48,0,0,0,2,.62,4.21,4.21,0,0,0,2.25-.54,4.09,4.09,0,0,0,1.23-1.09,2.47,2.47,0,0,1,.34-.38.86.86,0,0,1,.42-.07h.4a.57.57,0,0,1,.37.12.41.41,0,0,1,.15.33,2.08,2.08,0,0,1-.66,1.26,5.45,5.45,0,0,1-1.84,1.28,6.32,6.32,0,0,1-2.66.54A5,5,0,0,1,167.77,134.43Zm7.84-6v-.1a4.67,4.67,0,0,0-1.09-3.18,3.69,3.69,0,0,0-2.92-1.25,3.6,3.6,0,0,0-2.89,1.25,4.75,4.75,0,0,0-1.06,3.18v.1Z" transform="translate(-2.12 -1.53)"></path><path class="cls-1" d="M179.59,135.6a.54.54,0,0,1-.15-.4V123.28a.52.52,0,0,1,.55-.55h.43a.55.55,0,0,1,.4.15.54.54,0,0,1,.15.4v1.18a5.05,5.05,0,0,1,1.71-1.48,5.37,5.37,0,0,1,2.5-.5A4.7,4.7,0,0,1,189,124a6.05,6.05,0,0,1,1.32,4v7.11a.52.52,0,0,1-.55.55h-.42a.52.52,0,0,1-.55-.55v-7a4.61,4.61,0,0,0-1-3.15,3.56,3.56,0,0,0-2.84-1.13,3.75,3.75,0,0,0-2.88,1.14,4.39,4.39,0,0,0-1.08,3.14v7a.54.54,0,0,1-.15.4.55.55,0,0,1-.4.15H180A.54.54,0,0,1,179.59,135.6Z" transform="translate(-2.12 -1.53)"></path><path class="cls-1" d="M193.87,134.48a6.16,6.16,0,0,1-1.51-4.24l0-1,0-1a6.19,6.19,0,0,1,1.51-4.25,5.26,5.26,0,0,1,4-1.51,6.18,6.18,0,0,1,2.81.58,4.27,4.27,0,0,1,1.74,1.51,3.8,3.8,0,0,1,.63,1.89.43.43,0,0,1-.15.39.61.61,0,0,1-.4.16h-.35a.5.5,0,0,1-.36-.11,1.29,1.29,0,0,1-.24-.42,3.83,3.83,0,0,0-1.4-2,4.15,4.15,0,0,0-2.28-.59A3.82,3.82,0,0,0,195,125a4.86,4.86,0,0,0-1.14,3.34l0,.88,0,.87a4.87,4.87,0,0,0,1.14,3.35,3.86,3.86,0,0,0,2.87,1.09,4.15,4.15,0,0,0,2.28-.59,3.82,3.82,0,0,0,1.4-2,1.22,1.22,0,0,1,.24-.41.46.46,0,0,1,.36-.11h.35a.57.57,0,0,1,.4.16.43.43,0,0,1,.15.39,3.8,3.8,0,0,1-.63,1.89,4.18,4.18,0,0,1-1.74,1.5,6.17,6.17,0,0,1-2.81.59A5.26,5.26,0,0,1,193.87,134.48Z" transform="translate(-2.12 -1.53)"></path><path class="cls-1" d="M206.4,134.43a6.66,6.66,0,0,1-1.65-4.19l0-1,0-1a6.73,6.73,0,0,1,1.64-4.19,4.93,4.93,0,0,1,3.84-1.57,5,5,0,0,1,4.07,1.72,7.14,7.14,0,0,1,1.46,4.74v.37a.51.51,0,0,1-.16.4.59.59,0,0,1-.41.15h-8.92v.25a5.79,5.79,0,0,0,.54,2.2,4.09,4.09,0,0,0,1.37,1.62,3.46,3.46,0,0,0,2,.62,4.17,4.17,0,0,0,2.24-.54,4,4,0,0,0,1.24-1.09,1.72,1.72,0,0,1,.34-.38.79.79,0,0,1,.41-.07h.4a.6.6,0,0,1,.38.12.41.41,0,0,1,.15.33,2,2,0,0,1-.67,1.26,5.35,5.35,0,0,1-1.84,1.28,6.28,6.28,0,0,1-2.65.54A5,5,0,0,1,206.4,134.43Zm7.84-6v-.1a4.72,4.72,0,0,0-1.09-3.18,3.69,3.69,0,0,0-2.92-1.25,3.6,3.6,0,0,0-2.89,1.25,4.76,4.76,0,0,0-1.07,3.18v.1Z" transform="translate(-2.12 -1.53)"></path><path class="cls-1" d="M224.68,135.6a.54.54,0,0,1-.15-.4V123.28a.52.52,0,0,1,.55-.55h.42a.56.56,0,0,1,.41.15.54.54,0,0,1,.15.4v.87a4.38,4.38,0,0,1,1.51-1.25,4.69,4.69,0,0,1,2.07-.42,4.14,4.14,0,0,1,4,2.35,4.42,4.42,0,0,1,1.72-1.71,5,5,0,0,1,2.54-.64,4.39,4.39,0,0,1,3.38,1.41,5.72,5.72,0,0,1,1.3,4v7.29a.52.52,0,0,1-.55.55h-.42a.52.52,0,0,1-.55-.55v-7a4.62,4.62,0,0,0-.94-3.25,3.28,3.28,0,0,0-2.47-1,3.2,3.2,0,0,0-2.34,1,4.45,4.45,0,0,0-1,3.24v7a.54.54,0,0,1-.15.4.55.55,0,0,1-.4.15h-.43a.55.55,0,0,1-.4-.15.54.54,0,0,1-.15-.4v-7a4.5,4.5,0,0,0-1-3.24,3.3,3.3,0,0,0-2.43-1,3.21,3.21,0,0,0-2.35,1,4.42,4.42,0,0,0-1,3.22v7.06a.54.54,0,0,1-.15.4.56.56,0,0,1-.41.15h-.42A.54.54,0,0,1,224.68,135.6Z" transform="translate(-2.12 -1.53)"></path><path class="cls-1" d="M245.67,119.9a.55.55,0,0,1-.15-.4v-1a.6.6,0,0,1,.15-.42.51.51,0,0,1,.4-.16h1a.53.53,0,0,1,.41.16.57.57,0,0,1,.17.42v1a.53.53,0,0,1-.17.4.56.56,0,0,1-.41.15h-1A.54.54,0,0,1,245.67,119.9Zm.27,15.7a.54.54,0,0,1-.15-.4V123.28a.54.54,0,0,1,.15-.4.55.55,0,0,1,.4-.15h.43a.52.52,0,0,1,.55.55V135.2a.52.52,0,0,1-.55.55h-.43A.55.55,0,0,1,245.94,135.6Z" transform="translate(-2.12 -1.53)"></path><path class="cls-1" d="M250.52,135.6a.54.54,0,0,1-.15-.4V123.28a.54.54,0,0,1,.15-.4.55.55,0,0,1,.4-.15h.43a.52.52,0,0,1,.55.55v1.18a5,5,0,0,1,1.72-1.48,5.3,5.3,0,0,1,2.49-.5,4.7,4.7,0,0,1,3.78,1.56,6.06,6.06,0,0,1,1.33,4v7.11a.54.54,0,0,1-.15.4.58.58,0,0,1-.41.15h-.42a.52.52,0,0,1-.55-.55v-7a4.61,4.61,0,0,0-1-3.15,3.56,3.56,0,0,0-2.84-1.13,3.75,3.75,0,0,0-2.88,1.14,4.39,4.39,0,0,0-1.08,3.14v7a.52.52,0,0,1-.55.55h-.43A.55.55,0,0,1,250.52,135.6Z" transform="translate(-2.12 -1.53)"></path><path class="cls-1" d="M265.06,134.23a7.43,7.43,0,0,1-1.37-4.29l0-.7,0-.7a7.49,7.49,0,0,1,1.37-4.3,4.6,4.6,0,0,1,4-1.76,4.94,4.94,0,0,1,4.21,2v-5.94a.52.52,0,0,1,.55-.55h.43a.55.55,0,0,1,.4.15.54.54,0,0,1,.15.4V135.2a.54.54,0,0,1-.15.4.55.55,0,0,1-.4.15h-.43a.52.52,0,0,1-.55-.55V134a4.9,4.9,0,0,1-4.21,2A4.61,4.61,0,0,1,265.06,134.23Zm7.12-1a5.3,5.3,0,0,0,1.08-3.09c0-.17,0-.49,0-1s0-.81,0-1a5,5,0,0,0-.48-2,3.88,3.88,0,0,0-1.35-1.58,3.79,3.79,0,0,0-2.23-.63,3.4,3.4,0,0,0-3,1.29,5.84,5.84,0,0,0-1,3.32l0,.7a7.32,7.32,0,0,0,.9,3.82,3.33,3.33,0,0,0,3.1,1.49A3.49,3.49,0,0,0,272.18,133.23Z" transform="translate(-2.12 -1.53)"></path><path class="cls-1" d="M279.46,135.45a5.11,5.11,0,0,1-1.68-1.25,2,2,0,0,1-.56-1.13.42.42,0,0,1,.17-.36.62.62,0,0,1,.38-.14h.37a.6.6,0,0,1,.29.06.9.9,0,0,1,.26.26,4.09,4.09,0,0,0,1.34,1.22,4.53,4.53,0,0,0,2.17.44,4.69,4.69,0,0,0,2.5-.59,1.87,1.87,0,0,0,1-1.69,1.56,1.56,0,0,0-.39-1.1,3.1,3.1,0,0,0-1.25-.74,25.61,25.61,0,0,0-2.57-.72,5.94,5.94,0,0,1-3-1.37,3.13,3.13,0,0,1-.82-2.23,3.25,3.25,0,0,1,.52-1.76,3.8,3.8,0,0,1,1.52-1.35,5.28,5.28,0,0,1,2.45-.52,5.75,5.75,0,0,1,2.54.51,4.27,4.27,0,0,1,1.55,1.19,2,2,0,0,1,.51,1.1.44.44,0,0,1-.16.36.55.55,0,0,1-.39.14h-.37a.61.61,0,0,1-.55-.32,3.86,3.86,0,0,0-1.14-1.14,3.94,3.94,0,0,0-2-.39,3.49,3.49,0,0,0-2.21.6,1.93,1.93,0,0,0-.75,1.58,1.63,1.63,0,0,0,.3,1,2.68,2.68,0,0,0,1.13.74,17.13,17.13,0,0,0,2.4.69,7.22,7.22,0,0,1,3.28,1.4,3,3,0,0,1,.95,2.33,3.33,3.33,0,0,1-.57,1.88,3.93,3.93,0,0,1-1.71,1.35,6.67,6.67,0,0,1-2.7.5A6.11,6.11,0,0,1,279.46,135.45Z" transform="translate(-2.12 -1.53)"></path><path class="cls-1" d="M290.59,134.43a6.66,6.66,0,0,1-1.65-4.19l0-1,0-1a6.78,6.78,0,0,1,1.64-4.19,5,5,0,0,1,3.84-1.57,5,5,0,0,1,4.07,1.72,7.09,7.09,0,0,1,1.46,4.74v.37a.51.51,0,0,1-.16.4.58.58,0,0,1-.41.15h-8.92v.25a5.79,5.79,0,0,0,.54,2.2,4.09,4.09,0,0,0,1.37,1.62,3.48,3.48,0,0,0,2.05.62,4.15,4.15,0,0,0,2.24-.54,4,4,0,0,0,1.24-1.09,1.72,1.72,0,0,1,.34-.38.79.79,0,0,1,.41-.07h.4a.6.6,0,0,1,.38.12.41.41,0,0,1,.15.33,2.08,2.08,0,0,1-.66,1.26,5.55,5.55,0,0,1-1.84,1.28,6.35,6.35,0,0,1-2.66.54A5,5,0,0,1,290.59,134.43Zm7.84-6v-.1a4.72,4.72,0,0,0-1.09-3.18,3.69,3.69,0,0,0-2.92-1.25,3.6,3.6,0,0,0-2.89,1.25,4.76,4.76,0,0,0-1.07,3.18v.1Z" transform="translate(-2.12 -1.53)"></path><path class="cls-1" d="M304.21,134.63a5.25,5.25,0,0,1-.78-3.06v-7.39h-1.95a.52.52,0,0,1-.55-.55v-.35a.52.52,0,0,1,.55-.55h1.95v-4.21a.51.51,0,0,1,.16-.4.54.54,0,0,1,.4-.15h.42a.52.52,0,0,1,.55.55v4.21h3.11a.55.55,0,0,1,.4.15.54.54,0,0,1,.15.4v.35a.54.54,0,0,1-.15.4.55.55,0,0,1-.4.15H305v7.29a3.88,3.88,0,0,0,.47,2.11,1.68,1.68,0,0,0,1.54.72h1.35a.55.55,0,0,1,.4.15.54.54,0,0,1,.15.4v.35a.54.54,0,0,1-.15.4.55.55,0,0,1-.4.15h-1.48A3,3,0,0,1,304.21,134.63Z" transform="translate(-2.12 -1.53)"></path><path class="cls-1" d="M311.1,135.6a.54.54,0,0,1-.15-.4V134a.6.6,0,0,1,.15-.42.51.51,0,0,1,.4-.16h1.2a.55.55,0,0,1,.58.58v1.2a.51.51,0,0,1-.16.4.6.6,0,0,1-.42.15h-1.2A.54.54,0,0,1,311.1,135.6Z" transform="translate(-2.12 -1.53)"></path></svg></div>
+  <div>
+    <h1>IDWeek Planner: HIV</h1>
+    <p class="sub">21&ndash;24 October 2026 &middot; Washington, D.C. &middot; HIV sessions</p>
+  </div>
+</header>
+
+<div class="filters">
+  <div class="frow"><span class="flab">Day</span>
+    <button class="chip" data-day="all" aria-pressed="true"><span class="lg">All days</span><span class="sh">All</span></button><button class="chip" data-day="21-Oct" aria-pressed="false"><span class="lg">Wed 21 Oct</span><span class="sh">21</span></button><button class="chip" data-day="22-Oct" aria-pressed="false"><span class="lg">Thu 22 Oct</span><span class="sh">22</span></button><button class="chip" data-day="23-Oct" aria-pressed="false"><span class="lg">Fri 23 Oct</span><span class="sh">23</span></button><button class="chip" data-day="24-Oct" aria-pressed="false"><span class="lg">Sat 24 Oct</span><span class="sh">24</span></button></div>
+  <div class="frow"><span class="flab">Priority</span>
+    <button class="chip" data-prio="all" aria-pressed="true">All</button><button class="chip" data-prio="High" aria-pressed="false">High</button><button class="chip" data-prio="Medium" aria-pressed="false">Medium</button>
+    <div class="catwrap">
+      <button class="chip" id="f-cat-btn" aria-pressed="false" aria-expanded="false" aria-haspopup="true">Categories: <span id="f-cat-lab">All</span></button>
+      <div class="catmenu" id="f-cat-menu" hidden role="group" aria-label="Filter by category">
+        <div class="catacts"><button type="button" id="cat-all">Select all</button><button type="button" id="cat-none">Clear</button></div><label><input type="checkbox" value="HIV"><span class="ct">HIV</span><span class="cn">79</span></label><label><input type="checkbox" value="HIV/broad infections"><span class="ct">HIV/broad infections</span><span class="cn">1</span></label>
+      </div>
+    </div>
+    <button class="chip tgl" id="t-ind" aria-pressed="false">Industry<span class="lg"> only</span></button>
+    <button class="chip tgl" id="t-conc" aria-pressed="false">Concurrent<span class="lg"> only</span></button>
+  </div>
+  <div class="frow">
+    <input class="chip" id="f-q" type="search" placeholder="Search title, presenter, session, abstract no." aria-label="Search">
+    <span class="count" id="count"></span>
+  </div>
+  <div class="frow covrow" id="cov-row"></div>
+  <div class="frow jump" id="jump"><span class="flab">Jump</span><a href="#d-21-Oct">Wed 21 Oct</a> <a href="#d-22-Oct">Thu 22 Oct</a> <a href="#d-23-Oct">Fri 23 Oct</a> <a href="#d-24-Oct">Sat 24 Oct</a></div>
+</div>
+
+<details class="panel" id="panel"></details>
+<div id="body"></div>
+
+</div>
+<script>window.__DATA__={"items": [{"id": "i395", "row": 404, "date": "21-Oct", "sid": "IEE-8", "stype": "Industry / ancillary event", "stitle": "A Switch in Time: State-of-the-Art Strategies for ART Modification in People with Virologically Suppressed HIV", "swin": "19:00-20:30", "winStart": 1140, "winEnd": 1230, "aid": "IEE-8", "title": "A Switch in Time: State-of-the-Art Strategies for ART Modification in People with Virologically Suppressed HIV", "author": "Monica Gandhi", "affil": "Academic / Other", "cat": "HIV", "prio": "High", "room": "Independence Salon A+B+C+D", "isPoster": false, "isVirtual": false, "isIndustry": false, "start": 1140, "commitStart": 1140, "commitEnd": 1230, "timeLabel": "19:00–20:30"}, {"id": "i396", "row": 405, "date": "21-Oct", "sid": "IEE-6", "stype": "Industry / ancillary event", "stitle": "Advancing a Panviral Approach to HDV, HCV, HBV and HIV Prevention and Treatment", "swin": "11:00-12:30", "winStart": 660, "winEnd": 750, "aid": "IEE-6", "title": "Advancing a Panviral Approach to HDV, HCV, HBV and HIV Prevention and Treatment", "author": "David Wyles", "affil": "Gilead Sciences", "cat": "HIV/broad infections", "prio": "Medium", "room": "Archives", "isPoster": false, "isVirtual": false, "isIndustry": true, "start": 660, "commitStart": 660, "commitEnd": 750, "timeLabel": "11:00–12:30"}, {"id": "i475", "row": 484, "date": "21-Oct", "sid": "IEE-9", "stype": "Industry / ancillary event", "stitle": "Voice of the ART (ists)", "swin": "19:00-21:00", "winStart": 1140, "winEnd": 1260, "aid": "IEE-9", "title": "Voice of the ART (ists)", "author": "Sorana Segal-Maurer", "affil": "Gilead Sciences", "cat": "HIV", "prio": "High", "room": "Archives", "isPoster": false, "isVirtual": false, "isIndustry": true, "start": 1140, "commitStart": 1140, "commitEnd": 1260, "timeLabel": "19:00–21:00"}, {"id": "i501", "row": 510, "date": "22-Oct", "sid": "P - 23", "stype": "Poster", "stitle": "A1. Novel Agents", "swin": "12:15-13:30", "winStart": 735, "winEnd": 810, "aid": "P - 23", "title": "Metabolic and Safety Outcomes With BIC/LEN Single-Tablet Regimen in People With HIV And Comorbidities in ARTISTRY-2", "author": "Moti Ramgopal", "affil": "Gilead Sciences", "cat": "HIV", "prio": "High", "room": "Poster Hall B-C", "isPoster": true, "isVirtual": false, "isIndustry": true, "start": null, "commitStart": 735, "commitEnd": 810, "timeLabel": "12:15–13:30"}, {"id": "i505", "row": 514, "date": "22-Oct", "sid": "P - 24", "stype": "Poster", "stitle": "A1. Novel Agents", "swin": "12:15-13:30", "winStart": 735, "winEnd": 810, "aid": "P - 24", "title": "Safety Analysis of BIC/LEN Single-Tablet Regimen in People With HIV Who Have Comorbidities of Dyslipidemia, Hypertension, and Diabetes Mellitus From Phase 3 of ARTISTRY-1", "author": "Moti Ramgopal", "affil": "Gilead Sciences", "cat": "HIV", "prio": "High", "room": "Poster Hall B-C", "isPoster": true, "isVirtual": false, "isIndustry": true, "start": null, "commitStart": 735, "commitEnd": 810, "timeLabel": "12:15–13:30"}, {"id": "i558", "row": 567, "date": "22-Oct", "sid": "P - 82", "stype": "Poster", "stitle": "A3. Resistance mechanisms", "swin": "12:15-13:30", "winStart": 735, "winEnd": 810, "aid": "P - 82", "title": "TMB-365 and TMB-380: A potentially resistance repellant stand-alone maintenance bNAb regimen in suppressed people living with HIV-1 on combination antiretroviral therapy", "author": "Martin Markowitz", "affil": "TaiMed Biologics", "cat": "HIV", "prio": "Medium", "room": "Poster Hall B-C", "isPoster": true, "isVirtual": false, "isIndustry": true, "start": null, "commitStart": 735, "commitEnd": 810, "timeLabel": "12:15–13:30"}, {"id": "i639", "row": 648, "date": "22-Oct", "sid": "IEE-12", "stype": "Industry / ancillary event", "stitle": "Advances in HIV Prevention: The future is now", "swin": "07:00-08:00", "winStart": 420, "winEnd": 480, "aid": "IEE-12", "title": "Advances in HIV Prevention: The future is now", "author": "Mark Thrun", "affil": "Gilead Sciences", "cat": "HIV", "prio": "High", "room": "Marquis Salon 12+13", "isPoster": false, "isVirtual": false, "isIndustry": true, "start": 420, "commitStart": 420, "commitEnd": 480, "timeLabel": "07:00–08:00"}, {"id": "i664", "row": 673, "date": "22-Oct", "sid": "IS-2244", "stype": "Interactive Session", "stitle": "Challenging HIV Treatment and Prevention Clinical Cases​", "swin": "13:45-15:00", "winStart": 825, "winEnd": 900, "aid": "IS-2244.1", "title": "Case 1", "author": "Ank E. Nijhawan", "affil": "Academic / Other", "cat": "HIV", "prio": "Medium", "room": "BALLROOM ABC", "isPoster": false, "isVirtual": false, "isIndustry": false, "start": 825, "commitStart": 825, "commitEnd": 850, "timeLabel": "13:45–14:10"}, {"id": "i665", "row": 674, "date": "22-Oct", "sid": "IS-2244", "stype": "Interactive Session", "stitle": "Challenging HIV Treatment and Prevention Clinical Cases​", "swin": "13:45-15:00", "winStart": 825, "winEnd": 900, "aid": "IS-2244.2", "title": "Case 2", "author": "Valeria D. Cantos", "affil": "Academic / Other", "cat": "HIV", "prio": "Medium", "room": "BALLROOM ABC", "isPoster": false, "isVirtual": false, "isIndustry": false, "start": 850, "commitStart": 850, "commitEnd": 875, "timeLabel": "14:10–14:35"}, {"id": "i666", "row": 675, "date": "22-Oct", "sid": "IS-2244", "stype": "Interactive Session", "stitle": "Challenging HIV Treatment and Prevention Clinical Cases​", "swin": "13:45-15:00", "winStart": 825, "winEnd": 900, "aid": "IS-2244.3", "title": "Case 3", "author": "Kevin Ard", "affil": "Academic / Other", "cat": "HIV", "prio": "Medium", "room": "BALLROOM ABC", "isPoster": false, "isVirtual": false, "isIndustry": false, "start": 875, "commitStart": 875, "commitEnd": 900, "timeLabel": "14:35–15:00"}, {"id": "i1100", "row": 1109, "date": "22-Oct", "sid": "IEE-15", "stype": "Industry / ancillary event", "stitle": "Optimizing Outcomes with LAI PrEP and ART: Advanced Clinical Decision Making in HIV Care - An Interactive Showcase™", "swin": "18:30-20:30", "winStart": 1110, "winEnd": 1230, "aid": "IEE-15", "title": "Optimizing Outcomes with LAI PrEP and ART: Advanced Clinical Decision Making in HIV Care - An Interactive Showcase™", "author": "Meredith Clement", "affil": "Academic / Other", "cat": "HIV", "prio": "High", "room": "Marquis Salon 6", "isPoster": false, "isVirtual": false, "isIndustry": false, "start": 1110, "commitStart": 1110, "commitEnd": 1230, "timeLabel": "18:30–20:30"}, {"id": "i1225", "row": 1234, "date": "22-Oct", "sid": "LL4-S3", "stype": "Industry / ancillary event", "stitle": "Paired With Intention: Explore the data behind a novel HIV treatment combination for those on complex regimens or may feel left behind by advances in HIV treatment.", "swin": "12:15-13:00", "winStart": 735, "winEnd": 780, "aid": "LL4-S3", "title": "Paired With Intention: Explore the data behind a novel HIV treatment combination for those on complex regimens or may feel left behind by advances in HIV treatment.", "author": "Jay Gladsteins", "affil": "Gilead Sciences", "cat": "HIV", "prio": "High", "room": "Learning Lounge 4", "isPoster": false, "isVirtual": false, "isIndustry": true, "start": 735, "commitStart": 735, "commitEnd": 780, "timeLabel": "12:15–13:00"}, {"id": "i1242", "row": 1251, "date": "22-Oct", "sid": "RF-2230", "stype": "Rapid-Fire Poster", "stitle": "Rapid Fire Poster Session: Just Do It: Pushing The boundaries of HIV Prevention & Treatment", "swin": "12:15-12:45", "winStart": 735, "winEnd": 765, "aid": "RF-2230.7", "title": "Long-acting Injectable PrEP Interest vs. Access in an Ending the HIV Epidemic Priority State", "author": "Aditi Ramakrishnan", "affil": "Academic / Other", "cat": "HIV", "prio": "Medium", "room": "RF Arena 1", "isPoster": false, "isVirtual": false, "isIndustry": false, "start": 755, "commitStart": 755, "commitEnd": 760, "timeLabel": "12:35–12:40"}, {"id": "i1244", "row": 1253, "date": "22-Oct", "sid": "RF-2230", "stype": "Rapid-Fire Poster", "stitle": "Rapid Fire Poster Session: Just Do It: Pushing The boundaries of HIV Prevention & Treatment", "swin": "12:15-12:45", "winStart": 735, "winEnd": 765, "aid": "RF-2230.5", "title": "Optimization of long-acting injectable programs: a cross-sectional US survey study of implementation sites", "author": "Josh Havens", "affil": "Gilead Sciences", "cat": "HIV", "prio": "High", "room": "RF Arena 1", "isPoster": false, "isVirtual": false, "isIndustry": true, "start": 735, "commitStart": 735, "commitEnd": 740, "timeLabel": "12:15–12:20"}, {"id": "i1263", "row": 1272, "date": "22-Oct", "sid": "SS-2248", "stype": "Symposium", "stitle": "State of the Art HIV Treatment", "swin": "15:15-16:30", "winStart": 915, "winEnd": 990, "aid": "SS-2248.2", "title": "Into the Future: The HIV Treatment Pipeline and New Innovations", "author": "Kara W. Chew", "affil": "Academic / Other", "cat": "HIV", "prio": "High", "room": "147 AB", "isPoster": false, "isVirtual": false, "isIndustry": false, "start": 940, "commitStart": 940, "commitEnd": 965, "timeLabel": "15:40–16:05"}, {"id": "i1264", "row": 1273, "date": "22-Oct", "sid": "SS-2248", "stype": "Symposium", "stitle": "State of the Art HIV Treatment", "swin": "15:15-16:30", "winStart": 915, "winEnd": 990, "aid": "SS-2248.1", "title": "Modern Antiretroviral Therapy: Updates on Oral and Injectable Treatment Options", "author": "Anne F. Luetkemeyer", "affil": "Academic / Other", "cat": "HIV", "prio": "High", "room": "147 AB", "isPoster": false, "isVirtual": false, "isIndustry": false, "start": 915, "commitStart": 915, "commitEnd": 940, "timeLabel": "15:15–15:40"}, {"id": "i1265", "row": 1274, "date": "22-Oct", "sid": "SS-2248", "stype": "Symposium", "stitle": "State of the Art HIV Treatment", "swin": "15:15-16:30", "winStart": 915, "winEnd": 990, "aid": "SS-2248.3", "title": "Sustaining Global HIV Progress: Adapting and Driving Forward", "author": "Ingrid Katz", "affil": "Academic / Other", "cat": "HIV", "prio": "High", "room": "147 AB", "isPoster": false, "isVirtual": false, "isIndustry": false, "start": 965, "commitStart": 965, "commitEnd": 990, "timeLabel": "16:05–16:30"}, {"id": "i1299", "row": 1308, "date": "23-Oct", "sid": "LL1-S6", "stype": "Industry / ancillary event", "stitle": "A Treatment for Appropriate Adults Living With HIV-1", "swin": "11:15-12:00", "winStart": 675, "winEnd": 720, "aid": "LL1-S6", "title": "Exploring a Switch Regimen for Appropriate Adults Living With HIV-1", "author": "Jihad Slim", "affil": "Merck", "cat": "HIV", "prio": "High", "room": "Learning Lounge 1", "isPoster": false, "isVirtual": false, "isIndustry": true, "start": 675, "commitStart": 675, "commitEnd": 720, "timeLabel": "11:15–12:00"}, {"id": "i1342", "row": 1351, "date": "23-Oct", "sid": "IEE-16", "stype": "Industry / ancillary event", "stitle": "Coffee, Croissants, and Capsids, Oh My!", "swin": "07:00-08:30", "winStart": 420, "winEnd": 510, "aid": "IEE-16", "title": "Coffee, Croissants, and Capsids, Oh My!", "author": "Andrew Zolopa", "affil": "Gilead Sciences", "cat": "HIV", "prio": "High", "room": "Marquis Salon 5", "isPoster": false, "isVirtual": false, "isIndustry": true, "start": 420, "commitStart": 420, "commitEnd": 510, "timeLabel": "07:00–08:30"}, {"id": "i1354", "row": 1363, "date": "23-Oct", "sid": "P - 778", "stype": "Poster", "stitle": "E. Infectious Diseases Medical Education (scholarly work directed at enhancing infectious diseases education of trainees and/or health professionals, social determinants of health)", "swin": "12:15-13:30", "winStart": 735, "winEnd": 810, "aid": "P - 778", "title": "Bright Spots in HIV: Educating on Best Practices to Improve Implementation of LAIs", "author": "Bharati Hegde", "affil": "Academic / Other", "cat": "HIV", "prio": "Medium", "room": "Virtual Presentation", "isPoster": true, "isVirtual": true, "isIndustry": false, "start": null, "commitStart": 735, "commitEnd": 810, "timeLabel": "12:15–13:30"}, {"id": "i1360", "row": 1369, "date": "23-Oct", "sid": "P - 782", "stype": "Poster", "stitle": "E. Infectious Diseases Medical Education (scholarly work directed at enhancing infectious diseases education of trainees and/or health professionals, social determinants of health)", "swin": "12:15-13:30", "winStart": 735, "winEnd": 810, "aid": "P - 782", "title": "Descriptive Evaluation of a Medical Affairs–Led Educational Resource to Support Healthcare Providers in the Implementation of Lenacapavir for HIV PrEP", "author": "David Fessler", "affil": "Gilead Sciences", "cat": "HIV", "prio": "High", "room": "Poster Hall B-C", "isPoster": true, "isVirtual": false, "isIndustry": true, "start": null, "commitStart": 735, "commitEnd": 810, "timeLabel": "12:15–13:30"}, {"id": "i1372", "row": 1381, "date": "23-Oct", "sid": "P - 794", "stype": "Poster", "stitle": "E. Infectious Diseases Medical Education (scholarly work directed at enhancing infectious diseases education of trainees and/or health professionals, social determinants of health)", "swin": "12:15-13:30", "winStart": 735, "winEnd": 810, "aid": "P - 794", "title": "Improving Knowledge Deficits of and Attitudes Towards Prescribing Long-Acting Injectable HIV PrEP in Resident Primary Care Clinic", "author": "Michael Z. Chen", "affil": "Academic / Other", "cat": "HIV", "prio": "Medium", "room": "Poster Hall B-C", "isPoster": true, "isVirtual": false, "isIndustry": false, "start": null, "commitStart": 735, "commitEnd": 810, "timeLabel": "12:15–13:30"}, {"id": "i1439", "row": 1448, "date": "23-Oct", "sid": "P - 925", "stype": "Poster", "stitle": "H1. HIV: Epidemiology and screening", "swin": "12:15-13:30", "winStart": 735, "winEnd": 810, "aid": "P - 925", "title": "Oral vs Injectable HIV PrEP: Adherence and Persistence after Initiation in U.S. Claims", "author": "Seun Osundolire", "affil": "Academic / Other", "cat": "HIV", "prio": "Medium", "room": "Poster Hall B-C", "isPoster": true, "isVirtual": false, "isIndustry": false, "start": null, "commitStart": 735, "commitEnd": 810, "timeLabel": "12:15–13:30"}, {"id": "i1442", "row": 1451, "date": "23-Oct", "sid": "P - 908", "stype": "Poster", "stitle": "H1. HIV: Epidemiology and screening", "swin": "12:15-13:30", "winStart": 735, "winEnd": 810, "aid": "P - 908", "title": "Routine HIV Screening to Prevention Services: Diversifying Linkage to HIV Prevention Services across 98 Emergency Departments, Community Health Centers, and High Impact Settings", "author": "Carol Vincent", "affil": "Gilead Sciences", "cat": "HIV", "prio": "Medium", "room": "Poster Hall B-C", "isPoster": true, "isVirtual": false, "isIndustry": true, "start": null, "commitStart": 735, "commitEnd": 810, "timeLabel": "12:15–13:30"}, {"id": "i1448", "row": 1457, "date": "23-Oct", "sid": "P - 953", "stype": "Poster", "stitle": "H2. HIV: Prevention", "swin": "12:15-13:30", "winStart": 735, "winEnd": 810, "aid": "P - 953", "title": "A Nationwide Survey of Long-acting Injectable PrEP Implementation in Sexual Health Clinics", "author": "Joshua Nordman", "affil": "Academic / Other", "cat": "HIV", "prio": "Medium", "room": "Poster Hall B-C", "isPoster": true, "isVirtual": false, "isIndustry": false, "start": null, "commitStart": 735, "commitEnd": 810, "timeLabel": "12:15–13:30"}, {"id": "i1453", "row": 1462, "date": "23-Oct", "sid": "P - 974", "stype": "Poster", "stitle": "H2. HIV: Prevention", "swin": "12:15-13:30", "winStart": 735, "winEnd": 810, "aid": "P - 974", "title": "Changes in Pre‑Exposure Prophylaxis (PrEP) Cost Sharing and HIV Diagnoses Following United States Preventive Services Task Force (USPSTF) and Affordable Care Act (ACA) Coverage Milestones: An Interrupted Time Series Analysis", "author": "Li Tao", "affil": "Gilead Sciences", "cat": "HIV", "prio": "Medium", "room": "Poster Hall B-C", "isPoster": true, "isVirtual": false, "isIndustry": true, "start": null, "commitStart": 735, "commitEnd": 810, "timeLabel": "12:15–13:30"}, {"id": "i1458", "row": 1467, "date": "23-Oct", "sid": "P - 979", "stype": "Poster", "stitle": "H2. HIV: Prevention", "swin": "12:15-13:30", "winStart": 735, "winEnd": 810, "aid": "P - 979", "title": "Comparative Effectiveness of Long-Acting and Oral Pre-Exposure Prophylaxis for HIV Prevention: A Network Meta-Analysis", "author": "Nouraldin Hih", "affil": "Academic / Other", "cat": "HIV", "prio": "Medium", "room": "Poster Hall B-C", "isPoster": true, "isVirtual": false, "isIndustry": false, "start": null, "commitStart": 735, "commitEnd": 810, "timeLabel": "12:15–13:30"}, {"id": "i1461", "row": 1470, "date": "23-Oct", "sid": "P - 969", "stype": "Poster", "stitle": "H2. HIV: Prevention", "swin": "12:15-13:30", "winStart": 735, "winEnd": 810, "aid": "P - 969", "title": "Differences in Demographics and HIV Risk Exposures Among People Receiving Bictegravir/Emtricitabine/Tenofovir Alafenamide (B/F/TAF) vs. Other Post-exposure Prophylaxis Regimens in the United States, 2016-2025​", "author": "Kenneth H. Mayer", "affil": "Gilead Sciences", "cat": "HIV", "prio": "High", "room": "Poster Hall B-C", "isPoster": true, "isVirtual": false, "isIndustry": true, "start": null, "commitStart": 735, "commitEnd": 810, "timeLabel": "12:15–13:30"}, {"id": "i1470", "row": 1479, "date": "23-Oct", "sid": "P - 955", "stype": "Poster", "stitle": "H2. HIV: Prevention", "swin": "12:15-13:30", "winStart": 735, "winEnd": 810, "aid": "P - 955", "title": "Evaluating the National- and State-Level Economic and Public Health Effect of Introduction of a Twice-Yearly Injectable PrEP Coupled With Minimal Overall PrEP Expansion in the General US Population and MSM", "author": "JeanPierre Coaquira Castro", "affil": "Gilead Sciences", "cat": "HIV", "prio": "High", "room": "Poster Hall B-C", "isPoster": true, "isVirtual": false, "isIndustry": true, "start": null, "commitStart": 735, "commitEnd": 810, "timeLabel": "12:15–13:30"}, {"id": "i1471", "row": 1480, "date": "23-Oct", "sid": "P - 977", "stype": "Poster", "stitle": "H2. HIV: Prevention", "swin": "12:15-13:30", "winStart": 735, "winEnd": 810, "aid": "P - 977", "title": "Evaluating the Optimal Frequency of Renal Monitoring with Daily Oral TDF/FTC PrEP: A Retrospective Chart Review", "author": "Nam N. Pham", "affil": "Academic / Other", "cat": "HIV", "prio": "Medium", "room": "Poster Hall B-C", "isPoster": true, "isVirtual": false, "isIndustry": false, "start": null, "commitStart": 735, "commitEnd": 810, "timeLabel": "12:15–13:30"}, {"id": "i1472", "row": 1481, "date": "23-Oct", "sid": "P - 970", "stype": "Poster", "stitle": "H2. HIV: Prevention", "swin": "12:15-13:30", "winStart": 735, "winEnd": 810, "aid": "P - 970", "title": "Exploring Preferences and Adherence & Persistence among Individuals Initiating PrEP in Portugal: the POSITIVE CARE Study", "author": "Laura Paixão", "affil": "Merck", "cat": "HIV", "prio": "High", "room": "Poster Hall B-C", "isPoster": true, "isVirtual": false, "isIndustry": true, "start": null, "commitStart": 735, "commitEnd": 810, "timeLabel": "12:15–13:30"}, {"id": "i1474", "row": 1483, "date": "23-Oct", "sid": "P - 952", "stype": "Poster", "stitle": "H2. HIV: Prevention", "swin": "12:15-13:30", "winStart": 735, "winEnd": 810, "aid": "P - 952", "title": "High Incidence of HIV in Countries Excluded from Lenacapavir Access Programme", "author": "Ishani Sharma", "affil": "Academic / Other", "cat": "HIV", "prio": "High", "room": "Virtual Presentation", "isPoster": true, "isVirtual": true, "isIndustry": false, "start": null, "commitStart": 735, "commitEnd": 810, "timeLabel": "12:15–13:30"}, {"id": "i1475", "row": 1484, "date": "23-Oct", "sid": "P - 975", "stype": "Poster", "stitle": "H2. HIV: Prevention", "swin": "12:15-13:30", "winStart": 735, "winEnd": 810, "aid": "P - 975", "title": "High Incidence of Sexually Transmitted Infections and Sexual Behaviors Associated with HIV Acquisition among Cisgender Men and Gender- Diverse Individuals in PURPOSE 2", "author": "Meredith E. Clement", "affil": "Gilead Sciences", "cat": "HIV", "prio": "High", "room": "Poster Hall B-C", "isPoster": true, "isVirtual": false, "isIndustry": true, "start": null, "commitStart": 735, "commitEnd": 810, "timeLabel": "12:15–13:30"}, {"id": "i1479", "row": 1488, "date": "23-Oct", "sid": "P - 948", "stype": "Poster", "stitle": "H2. HIV: Prevention", "swin": "12:15-13:30", "winStart": 735, "winEnd": 810, "aid": "P - 948", "title": "Implementation and Uptake of Lenacapavir Long-acting Injectable PrEP at Duke University Hospital", "author": "Francheska Rivera", "affil": "Academic / Other", "cat": "HIV", "prio": "Medium", "room": "Poster Hall B-C", "isPoster": true, "isVirtual": false, "isIndustry": false, "start": null, "commitStart": 735, "commitEnd": 810, "timeLabel": "12:15–13:30"}, {"id": "i1483", "row": 1492, "date": "23-Oct", "sid": "P - 954", "stype": "Poster", "stitle": "H2. HIV: Prevention", "swin": "12:15-13:30", "winStart": 735, "winEnd": 810, "aid": "P - 954", "title": "Lenacapavir for HIV PrEP: Early Real-World Implementation Insights on Uptake, Patient Pathways, and Injectable Transition Outcomes at a Multi-Site U.S. Clinic Network", "author": "Jessica A. Altamirano", "affil": "Academic / Other", "cat": "HIV", "prio": "High", "room": "Poster Hall B-C", "isPoster": true, "isVirtual": false, "isIndustry": false, "start": null, "commitStart": 735, "commitEnd": 810, "timeLabel": "12:15–13:30"}, {"id": "i1484", "row": 1493, "date": "23-Oct", "sid": "P - 931", "stype": "Poster", "stitle": "H2. HIV: Prevention", "swin": "12:15-13:30", "winStart": 735, "winEnd": 810, "aid": "P - 931", "title": "Long-acting Injectable PrEP Interest vs. Access in an Ending the HIV Epidemic Priority State", "author": "Aditi Ramakrishnan", "affil": "Academic / Other", "cat": "HIV", "prio": "Medium", "room": "Poster Hall B-C", "isPoster": true, "isVirtual": false, "isIndustry": false, "start": null, "commitStart": 735, "commitEnd": 810, "timeLabel": "12:15–13:30"}, {"id": "i1494", "row": 1503, "date": "23-Oct", "sid": "P - 950", "stype": "Poster", "stitle": "H2. HIV: Prevention", "swin": "12:15-13:30", "winStart": 735, "winEnd": 810, "aid": "P - 950", "title": "Pre-Exposure Prophylaxis (PrEP) Uptake and Care in Locations of High HIV Incidence for Black Cisgender Women (CGW) in the US, 2024", "author": "Gina Brown", "affil": "Gilead Sciences", "cat": "HIV", "prio": "High", "room": "Poster Hall B-C", "isPoster": true, "isVirtual": false, "isIndustry": true, "start": null, "commitStart": 735, "commitEnd": 810, "timeLabel": "12:15–13:30"}, {"id": "i1499", "row": 1508, "date": "23-Oct", "sid": "P - 946", "stype": "Poster", "stitle": "H2. HIV: Prevention", "swin": "12:15-13:30", "winStart": 735, "winEnd": 810, "aid": "P - 946", "title": "Real-World Evaluation of Patient Utilization and Satisfaction with Lenacapavir Injections for HIV Pre-Exposure Prophylaxis", "author": "Ena Kovač", "affil": "Academic / Other", "cat": "HIV", "prio": "High", "room": "Poster Hall B-C", "isPoster": true, "isVirtual": false, "isIndustry": false, "start": null, "commitStart": 735, "commitEnd": 810, "timeLabel": "12:15–13:30"}, {"id": "i1519", "row": 1528, "date": "23-Oct", "sid": "P - 1066", "stype": "Poster", "stitle": "H4. HIV: Treatment", "swin": "12:15-13:30", "winStart": 735, "winEnd": 810, "aid": "P - 1066", "title": "A Comparative Analysis of Adherence and Persistence Patterns among Patients Treated with a Long-Acting Injectable Antiretroviral Regimen versus Oral Single-Tablet Regimens", "author": "Yvonne Viteri", "affil": "Academic / Other", "cat": "HIV", "prio": "Medium", "room": "Poster Hall B-C", "isPoster": true, "isVirtual": false, "isIndustry": false, "start": null, "commitStart": 735, "commitEnd": 810, "timeLabel": "12:15–13:30"}, {"id": "i1521", "row": 1530, "date": "23-Oct", "sid": "P - 1064", "stype": "Poster", "stitle": "H4. HIV: Treatment", "swin": "12:15-13:30", "winStart": 735, "winEnd": 810, "aid": "P - 1064", "title": "Antiretroviral Safety in Pregnancy: An Updated Analysis of Prospective Reports from the Antiretroviral Pregnancy Registry", "author": "William R. Short", "affil": "ViiV Healthcare; Gilead Sciences", "cat": "HIV", "prio": "Medium", "room": "Poster Hall B-C", "isPoster": true, "isVirtual": false, "isIndustry": true, "start": null, "commitStart": 735, "commitEnd": 810, "timeLabel": "12:15–13:30"}, {"id": "i1523", "row": 1532, "date": "23-Oct", "sid": "P - 1012", "stype": "Poster", "stitle": "H4. HIV: Treatment", "swin": "12:15-13:30", "winStart": 735, "winEnd": 810, "aid": "P - 1012", "title": "Association between Treatment Persistence and Healthcare Resource Utilization and Costs Among People with HIV Receiving Oral Antiretroviral Therapy", "author": "Cassidy Trom", "affil": "Gilead Sciences", "cat": "HIV", "prio": "Medium", "room": "Poster Hall B-C", "isPoster": true, "isVirtual": false, "isIndustry": true, "start": null, "commitStart": 735, "commitEnd": 810, "timeLabel": "12:15–13:30"}, {"id": "i1526", "row": 1535, "date": "23-Oct", "sid": "P - 1039", "stype": "Poster", "stitle": "H4. HIV: Treatment", "swin": "12:15-13:30", "winStart": 735, "winEnd": 810, "aid": "P - 1039", "title": "Changes in Fasting Lipids and Insulin Resistance After Switch to Doravirine/Islatravir (100 mg/0.25 mg) Once Daily: Week 96 Results From Two Phase 3 Studies in Adults Living With HIV-1", "author": "Princy N. Kumar", "affil": "Merck", "cat": "HIV", "prio": "High", "room": "Poster Hall B-C", "isPoster": true, "isVirtual": false, "isIndustry": true, "start": null, "commitStart": 735, "commitEnd": 810, "timeLabel": "12:15–13:30"}, {"id": "i1528", "row": 1537, "date": "23-Oct", "sid": "P - 1028", "stype": "Poster", "stitle": "H4. HIV: Treatment", "swin": "12:15-13:30", "winStart": 735, "winEnd": 810, "aid": "P - 1028", "title": "Clinical Factors Associated With INSTI-Associated Resistance Mutations Among People with HIV in Care", "author": "Rami Rifi", "affil": "Academic / Other", "cat": "HIV", "prio": "Medium", "room": "Poster Hall B-C", "isPoster": true, "isVirtual": false, "isIndustry": false, "start": null, "commitStart": 735, "commitEnd": 810, "timeLabel": "12:15–13:30"}, {"id": "i1529", "row": 1538, "date": "23-Oct", "sid": "P - 1049", "stype": "Poster", "stitle": "H4. HIV: Treatment", "swin": "12:15-13:30", "winStart": 735, "winEnd": 810, "aid": "P - 1049", "title": "Community HERO Treatment Survey: Characterizing Treatment Journey for Older Persons With HIV", "author": "Michael Bogart", "affil": "Gilead Sciences", "cat": "HIV", "prio": "High", "room": "Poster Hall B-C", "isPoster": true, "isVirtual": false, "isIndustry": true, "start": null, "commitStart": 735, "commitEnd": 810, "timeLabel": "12:15–13:30"}, {"id": "i1531", "row": 1540, "date": "23-Oct", "sid": "P - 1050", "stype": "Poster", "stitle": "H4. HIV: Treatment", "swin": "12:15-13:30", "winStart": 735, "winEnd": 810, "aid": "P - 1050", "title": "Comparative efficacy and safety of Islatravir–Doravirine versus integrase inhibitor–based triple antiretroviral therapy in HIV-1 infection: a systematic review", "author": "Moisés Rojas", "affil": "Academic / Other", "cat": "HIV", "prio": "High", "room": "Poster Hall B-C", "isPoster": true, "isVirtual": false, "isIndustry": false, "start": null, "commitStart": 735, "commitEnd": 810, "timeLabel": "12:15–13:30"}, {"id": "i1535", "row": 1544, "date": "23-Oct", "sid": "P - 1045", "stype": "Poster", "stitle": "H4. HIV: Treatment", "swin": "12:15-13:30", "winStart": 735, "winEnd": 810, "aid": "P - 1045", "title": "Efficacy and Safety Outcomes With BIC/LEN Single-Tablet Regimen in People With HIV and Renal Impairment in Phase 3 of ARTISTRY-1", "author": "Malcolm Hedgcock", "affil": "Gilead Sciences", "cat": "HIV", "prio": "High", "room": "Poster Hall B-C", "isPoster": true, "isVirtual": false, "isIndustry": true, "start": null, "commitStart": 735, "commitEnd": 810, "timeLabel": "12:15–13:30"}, {"id": "i1539", "row": 1548, "date": "23-Oct", "sid": "P - 1053", "stype": "Poster", "stitle": "H4. HIV: Treatment", "swin": "12:15-13:30", "winStart": 735, "winEnd": 810, "aid": "P - 1053", "title": "Exposure-Response Analysis of Islatravir 0.25 mg With Doravirine 100 mg Once Daily in Treatment-Naive and Virologically Suppressed People Living With HIV-1 at Week 48", "author": "Munjal Patel", "affil": "Merck", "cat": "HIV", "prio": "High", "room": "Poster Hall B-C", "isPoster": true, "isVirtual": false, "isIndustry": true, "start": null, "commitStart": 735, "commitEnd": 810, "timeLabel": "12:15–13:30"}, {"id": "i1541", "row": 1550, "date": "23-Oct", "sid": "P - 1008", "stype": "Poster", "stitle": "H4. HIV: Treatment", "swin": "12:15-13:30", "winStart": 735, "winEnd": 810, "aid": "P - 1008", "title": "Global Perspectives on Holistic Care: Amplifying Voices of Women and Gender-Diverse Persons Living With HIV to Identify Areas for Improvement Alongside Healthcare Providers (HCPs)", "author": "Bonnie Douglas", "affil": "Academic / Other", "cat": "HIV", "prio": "Medium", "room": "Poster Hall B-C", "isPoster": true, "isVirtual": false, "isIndustry": false, "start": null, "commitStart": 735, "commitEnd": 810, "timeLabel": "12:15–13:30"}, {"id": "i1542", "row": 1551, "date": "23-Oct", "sid": "P - 1023", "stype": "Poster", "stitle": "H4. HIV: Treatment", "swin": "12:15-13:30", "winStart": 735, "winEnd": 810, "aid": "P - 1023", "title": "High rates of HIV virologic suppression after initiation of long-acting injectable antiviral agents among patients with virologic failure in an urban health system", "author": "Ernesto Rafael Portillo Diaz", "affil": "Academic / Other", "cat": "HIV", "prio": "Medium", "room": "Poster Hall B-C", "isPoster": true, "isVirtual": false, "isIndustry": false, "start": null, "commitStart": 735, "commitEnd": 810, "timeLabel": "12:15–13:30"}, {"id": "i1548", "row": 1557, "date": "23-Oct", "sid": "P - 1059", "stype": "Poster", "stitle": "H4. HIV: Treatment", "swin": "12:15-13:30", "winStart": 735, "winEnd": 810, "aid": "P - 1059", "title": "Incidence of resistance-associated mutations among people with HIV receiving bictegravir/emtricitabine/tenofovir alafenamide versus dolutegravir-based regimens", "author": "Travis Lim", "affil": "Gilead Sciences", "cat": "HIV", "prio": "High", "room": "Poster Hall B-C", "isPoster": true, "isVirtual": false, "isIndustry": true, "start": null, "commitStart": 735, "commitEnd": 810, "timeLabel": "12:15–13:30"}, {"id": "i1549", "row": 1558, "date": "23-Oct", "sid": "P - 1016", "stype": "Poster", "stitle": "H4. HIV: Treatment", "swin": "12:15-13:30", "winStart": 735, "winEnd": 810, "aid": "P - 1016", "title": "Is There Still a Role for Novel Oral Single-Tablet Regimens in the Era of Long-Acting HIV Therapy? A Cross-Sectional Assessment of Eligibility for Emerging Daily Oral ART", "author": "Ghinwa Al Hassanieh", "affil": "Academic / Other", "cat": "HIV", "prio": "Medium", "room": "Poster Hall B-C", "isPoster": true, "isVirtual": false, "isIndustry": false, "start": null, "commitStart": 735, "commitEnd": 810, "timeLabel": "12:15–13:30"}, {"id": "i1554", "row": 1563, "date": "23-Oct", "sid": "P - 1057", "stype": "Poster", "stitle": "H4. HIV: Treatment", "swin": "12:15-13:30", "winStart": 735, "winEnd": 810, "aid": "P - 1057", "title": "Long-Term Viral Suppression and Cardiometabolic Benefits of Switching to Ainuovirine/Lamivudine/Tenofovir DF in Virologically Suppressed People with HIV-1: 192-Week Extended Results from the SPRINT Study", "author": "Hong Qin", "affil": "Academic / Other", "cat": "HIV", "prio": "Medium", "room": "Poster Hall B-C", "isPoster": true, "isVirtual": false, "isIndustry": false, "start": null, "commitStart": 735, "commitEnd": 810, "timeLabel": "12:15–13:30"}, {"id": "i1559", "row": 1568, "date": "23-Oct", "sid": "P - 1025", "stype": "Poster", "stitle": "H4. HIV: Treatment", "swin": "12:15-13:30", "winStart": 735, "winEnd": 810, "aid": "P - 1025", "title": "Patient-Reported Outcomes With Doravirine/Islatravir (100/0.25 mg) Once Daily Versus Bictegravir/Emtricitabine/Tenofovir Alafenamide in Previously Untreated Adults Living With HIV-1: Phase 3 Week 48 Results", "author": "Gary I. Sinclair", "affil": "Merck", "cat": "HIV", "prio": "High", "room": "Poster Hall B-C", "isPoster": true, "isVirtual": false, "isIndustry": true, "start": null, "commitStart": 735, "commitEnd": 810, "timeLabel": "12:15–13:30"}, {"id": "i1561", "row": 1570, "date": "23-Oct", "sid": "P - 1019", "stype": "Poster", "stitle": "H4. HIV: Treatment", "swin": "12:15-13:30", "winStart": 735, "winEnd": 810, "aid": "P - 1019", "title": "Pharmacokinetic and clinical data supporting the lenacapavir (LEN) reloading strategy for bictegravir/lenacapavir (BIC/LEN) single-tablet regimen dosing in the ARTISTRY studies", "author": "Dhananjay Marathe", "affil": "Gilead Sciences", "cat": "HIV", "prio": "High", "room": "Poster Hall B-C", "isPoster": true, "isVirtual": false, "isIndustry": true, "start": null, "commitStart": 735, "commitEnd": 810, "timeLabel": "12:15–13:30"}, {"id": "i1566", "row": 1575, "date": "23-Oct", "sid": "P - 1052", "stype": "Poster", "stitle": "H4. HIV: Treatment", "swin": "12:15-13:30", "winStart": 735, "winEnd": 810, "aid": "P - 1052", "title": "Real-World Experience with Injectable Lenacapavir Regimens in Patients with HIV-1: A Descriptive Study", "author": "Madison Patrus", "affil": "Academic / Other", "cat": "HIV", "prio": "Medium", "room": "Poster Hall B-C", "isPoster": true, "isVirtual": false, "isIndustry": false, "start": null, "commitStart": 735, "commitEnd": 810, "timeLabel": "12:15–13:30"}, {"id": "i1567", "row": 1576, "date": "23-Oct", "sid": "P - 1007", "stype": "Poster", "stitle": "H4. HIV: Treatment", "swin": "12:15-13:30", "winStart": 735, "winEnd": 810, "aid": "P - 1007", "title": "Real-World Implementation of Long-Acting Injectable Antiretroviral Therapy for HIV Treatment and Prevention: Adherence, Retention, and Outcomes", "author": "Audrey Siana", "affil": "Academic / Other", "cat": "HIV", "prio": "Medium", "room": "Poster Hall B-C", "isPoster": true, "isVirtual": false, "isIndustry": false, "start": null, "commitStart": 735, "commitEnd": 810, "timeLabel": "12:15–13:30"}, {"id": "i1571", "row": 1580, "date": "23-Oct", "sid": "P - 1029", "stype": "Poster", "stitle": "H4. HIV: Treatment", "swin": "12:15-13:30", "winStart": 735, "winEnd": 810, "aid": "P - 1029", "title": "Switching to Islatravir + Ulonivirine Once Weekly Maintained HIV-1 Viral Suppression at Week 24 in the Presence of Baseline NNRTI Resistance-Associated Mutations and M184I/V in Proviral DNA", "author": "Islam T. M Hussein", "affil": "Merck", "cat": "HIV", "prio": "High", "room": "Poster Hall B-C", "isPoster": true, "isVirtual": false, "isIndustry": true, "start": null, "commitStart": 735, "commitEnd": 810, "timeLabel": "12:15–13:30"}, {"id": "i1579", "row": 1588, "date": "23-Oct", "sid": "P - 1054", "stype": "Poster", "stitle": "H4. HIV: Treatment", "swin": "12:15-13:30", "winStart": 735, "winEnd": 810, "aid": "P - 1054", "title": "Virological Effectiveness of B/F/TAF Despite Suboptimal Adherence Measured by Electronic Monitoring in a Socially Vulnerable Real-World Cohort", "author": "Jean-Jacques Parienti", "affil": "Roche; Gilead Sciences", "cat": "HIV", "prio": "High", "room": "Poster Hall B-C", "isPoster": true, "isVirtual": false, "isIndustry": true, "start": null, "commitStart": 735, "commitEnd": 810, "timeLabel": "12:15–13:30"}, {"id": "i1580", "row": 1589, "date": "23-Oct", "sid": "P - 1024", "stype": "Poster", "stitle": "H4. HIV: Treatment", "swin": "12:15-13:30", "winStart": 735, "winEnd": 810, "aid": "P - 1024", "title": "Week 48 Efficacy and Safety of Doravirine/Islatravir (100/0.25 mg) vs Bictegravir/Emtricitabine/Tenofovir Alafenamide in Previously Untreated Adults Living with HIV-1 with Renal Impairment", "author": "Frank A. Post", "affil": "Merck", "cat": "HIV", "prio": "High", "room": "Poster Hall B-C", "isPoster": true, "isVirtual": false, "isIndustry": true, "start": null, "commitStart": 735, "commitEnd": 810, "timeLabel": "12:15–13:30"}, {"id": "i1585", "row": 1594, "date": "23-Oct", "sid": "P - 1114", "stype": "Poster", "stitle": "H5. HIV: Complications and co-infections", "swin": "12:15-13:30", "winStart": 735, "winEnd": 810, "aid": "P - 1114", "title": "Baseline Characteristics and Substance Use Among People Who Inject Drugs (PWID) with Evidence of Active Use in HPTN 103/PURPOSE 4: a Phase 2 Study of Twice-Yearly Subcutaneous (SC) Lenacapavir (LEN) for Pre-exposure Prophylaxis (PrEP)", "author": "Sunil S. Solomon", "affil": "Gilead Sciences", "cat": "HIV", "prio": "High", "room": "Poster Hall B-C", "isPoster": true, "isVirtual": false, "isIndustry": true, "start": null, "commitStart": 735, "commitEnd": 810, "timeLabel": "12:15–13:30"}, {"id": "i1606", "row": 1615, "date": "23-Oct", "sid": "P - 1071", "stype": "Poster", "stitle": "H5. HIV: Complications and co-infections", "swin": "12:15-13:30", "winStart": 735, "winEnd": 810, "aid": "P - 1071", "title": "Low Incidence of Hepatitis B (HBV) Infection Among People Receiving Lenacapavir (LEN) or Tenofovir-Based HIV Pre-exposure Prophylaxis (PrEP) in PURPOSE 1 and PURPOSE 2", "author": "Allison Agwu", "affil": "Gilead Sciences", "cat": "HIV", "prio": "Medium", "room": "Poster Hall B-C", "isPoster": true, "isVirtual": false, "isIndustry": true, "start": null, "commitStart": 735, "commitEnd": 810, "timeLabel": "12:15–13:30"}, {"id": "i1612", "row": 1621, "date": "23-Oct", "sid": "P - 1112", "stype": "Poster", "stitle": "H5. HIV: Complications and co-infections", "swin": "12:15-13:30", "winStart": 735, "winEnd": 810, "aid": "P - 1112", "title": "Potential Drug-Drug Interactions in People Living With HIV on Antiretroviral Therapy Stratified by Age and Sex", "author": "Sean P. Fleming", "affil": "Merck", "cat": "HIV", "prio": "High", "room": "Poster Hall B-C", "isPoster": true, "isVirtual": false, "isIndustry": true, "start": null, "commitStart": 735, "commitEnd": 810, "timeLabel": "12:15–13:30"}, {"id": "i1631", "row": 1640, "date": "23-Oct", "sid": "OA-2337", "stype": "Oral Abstract", "stitle": "Hot Off the Press: New Pathways in HIV Treatment", "swin": "13:45-15:00", "winStart": 825, "winEnd": 900, "aid": "OA-2337.1", "title": "Efficacy and Safety by Demographic Subgroup After Switch to Doravirine/Islatravir (100 mg/0.25 mg) Once Daily: Week 96 Results From Two Randomized, Active-Controlled Phase 3 Studies in Adults Living With HIV-1", "author": "Moti Ramgopal", "affil": "Merck", "cat": "HIV", "prio": "High", "room": "103 AB", "isPoster": false, "isVirtual": false, "isIndustry": true, "start": 837, "commitStart": 837, "commitEnd": 849, "timeLabel": "13:57–14:09"}, {"id": "i1634", "row": 1643, "date": "23-Oct", "sid": "OA-2337", "stype": "Oral Abstract", "stitle": "Hot Off the Press: New Pathways in HIV Treatment", "swin": "13:45-15:00", "winStart": 825, "winEnd": 900, "aid": "OA-2337.2", "title": "Patient-Reported Outcomes From Virologically Suppressed Adults Living With HIV-1 Switching to Once-Weekly Oral Islatravir in Combination With Ulonivirine: Phase 2b Week 24 Results", "author": "Gary I. Sinclair", "affil": "Merck", "cat": "HIV", "prio": "High", "room": "103 AB", "isPoster": false, "isVirtual": false, "isIndustry": true, "start": 849, "commitStart": 849, "commitEnd": 861, "timeLabel": "14:09–14:21"}, {"id": "i1635", "row": 1644, "date": "23-Oct", "sid": "OA-2337", "stype": "Oral Abstract", "stitle": "Hot Off the Press: New Pathways in HIV Treatment", "swin": "13:45-15:00", "winStart": 825, "winEnd": 900, "aid": "OA-2337.5", "title": "Single-dose escalation study of TMB-365 in people living with HIV: safety, pharmacokinetics, and antiviral activity", "author": "Martin Markowitz", "affil": "Academic / Other", "cat": "HIV", "prio": "Medium", "room": "103 AB", "isPoster": false, "isVirtual": false, "isIndustry": false, "start": 885, "commitStart": 885, "commitEnd": 900, "timeLabel": "14:45–15:00"}, {"id": "i1718", "row": 1727, "date": "23-Oct", "sid": "LL4-S7", "stype": "Industry / ancillary event", "stitle": "Learn About a PrEP Injectable Option", "swin": "12:15-13:00", "winStart": 735, "winEnd": 780, "aid": "LL4-S7", "title": "Learn About a PrEP Injectable Option", "author": "Dr. Theo Theo Hodge", "affil": "Academic / Other", "cat": "HIV", "prio": "High", "room": "Learning Lounge 4", "isPoster": false, "isVirtual": false, "isIndustry": false, "start": 735, "commitStart": 735, "commitEnd": 780, "timeLabel": "12:15–13:00"}, {"id": "i2018", "row": 2027, "date": "23-Oct", "sid": "DS-2323", "stype": "Debate-Style Session", "stitle": "Squabbles Among Friends: Pushing the Envelope on HIV Treatment and Prevention", "swin": "10:30-11:45", "winStart": 630, "winEnd": 705, "aid": "DS-2323.2", "title": "Making Long-acting Work in the Face of Questionable Resistance: To LEN or Not to LEN?", "author": "Carolyn Chu", "affil": "Academic / Other", "cat": "HIV", "prio": "High", "room": "202 AB", "isPoster": false, "isVirtual": false, "isIndustry": false, "start": 665, "commitStart": 665, "commitEnd": 705, "timeLabel": "11:05–11:45"}, {"id": "i2022", "row": 2031, "date": "23-Oct", "sid": "SS-2348", "stype": "Symposium", "stitle": "State of the ART HIV Prevention", "swin": "15:15-16:30", "winStart": 915, "winEnd": 990, "aid": "SS-2348.1", "title": "Expanding options for HIV prevention: Updates on Oral and Injectable agents", "author": "Onyema Ogbuagu", "affil": "Academic / Other", "cat": "HIV", "prio": "High", "room": "202 AB", "isPoster": false, "isVirtual": false, "isIndustry": false, "start": 915, "commitStart": 915, "commitEnd": 940, "timeLabel": "15:15–15:40"}, {"id": "i2023", "row": 2032, "date": "23-Oct", "sid": "SS-2348", "stype": "Symposium", "stitle": "State of the ART HIV Prevention", "swin": "15:15-16:30", "winStart": 915, "winEnd": 990, "aid": "SS-2348.3", "title": "Getting Better All the Time: Pipeline of New HIV Prevention Modalities", "author": "Albert Liu", "affil": "Academic / Other", "cat": "HIV", "prio": "High", "room": "202 AB", "isPoster": false, "isVirtual": false, "isIndustry": false, "start": 965, "commitStart": 965, "commitEnd": 990, "timeLabel": "16:05–16:30"}, {"id": "i2024", "row": 2033, "date": "23-Oct", "sid": "SS-2348", "stype": "Symposium", "stitle": "State of the ART HIV Prevention", "swin": "15:15-16:30", "winStart": 915, "winEnd": 990, "aid": "SS-2348.2", "title": "Making Prevention Work for All: Implementation of Novel Preventive Strategies", "author": "Susanne Doblecki-Lewis", "affil": "Academic / Other", "cat": "HIV", "prio": "High", "room": "202 AB", "isPoster": false, "isVirtual": false, "isIndustry": false, "start": 940, "commitStart": 940, "commitEnd": 965, "timeLabel": "15:40–16:05"}, {"id": "i2139", "row": 2148, "date": "24-Oct", "sid": "OA-2418", "stype": "Oral Abstract", "stitle": "Breaking News: Scaling Up HIV Prevention", "swin": "10:30-11:45", "winStart": 630, "winEnd": 705, "aid": "OA-2418.1", "title": "Early Real-World Adoption Patterns of Long-Acting Lenacapavir for HIV PrEP in the United States (June 2025–March 2026)", "author": "Li Tao", "affil": "Gilead Sciences", "cat": "HIV", "prio": "High", "room": "102 AB", "isPoster": false, "isVirtual": false, "isIndustry": true, "start": 630, "commitStart": 630, "commitEnd": 642, "timeLabel": "10:30–10:42"}, {"id": "i2142", "row": 2151, "date": "24-Oct", "sid": "OA-2418", "stype": "Oral Abstract", "stitle": "Breaking News: Scaling Up HIV Prevention", "swin": "10:30-11:45", "winStart": 630, "winEnd": 705, "aid": "OA-2418.6", "title": "Phase 1 Study to Evaluate the Absorption, Metabolism, and Excretion of MK-8527, a Nucleoside Reverse Transcriptase Translocation Inhibitor, in Adults Without HIV", "author": "Russ P. Carstens", "affil": "Merck", "cat": "HIV", "prio": "High", "room": "102 AB", "isPoster": false, "isVirtual": false, "isIndustry": true, "start": 690, "commitStart": 690, "commitEnd": 705, "timeLabel": "11:30–11:45"}, {"id": "i2165", "row": 2174, "date": "24-Oct", "sid": "P - 231", "stype": "Poster", "stitle": "C1. Clinical trials", "swin": "12:15-13:30", "winStart": 735, "winEnd": 810, "aid": "P - 231", "title": "Viral Kinetics, Pharmacokinetics, And Exposure-Response Analysis of Monotherapy of Multiple Ascending Dose Asuptegravir, a New-Generation Integrase Strand Transfer Inhibitor, Followed by Combination with Emtricitabine And Tenofovir Alafenamide in Treatment-Naïve People Living with HIV-1: a Two-Period, Randomized, Placebo-Controlled Phase 1/2 Study.", "author": "Hong Qin", "affil": "Academic / Other", "cat": "HIV", "prio": "Medium", "room": "Poster Hall B-C", "isPoster": true, "isVirtual": false, "isIndustry": false, "start": null, "commitStart": 735, "commitEnd": 810, "timeLabel": "12:15–13:30"}, {"id": "i2368", "row": 2377, "date": "24-Oct", "sid": "MP-2406", "stype": "Meet-the-Professor", "stitle": "Cancer Prevention and Screening for People Living with HIV", "swin": "08:00-09:00", "winStart": 480, "winEnd": 540, "aid": "MP-2406.1", "title": "GI Cancers from Upper to Lower", "author": "Ma Somsouk", "affil": "Academic / Other", "cat": "HIV", "prio": "Medium", "room": "152 AB", "isPoster": false, "isVirtual": false, "isIndustry": false, "start": 480, "commitStart": 480, "commitEnd": 510, "timeLabel": "08:00–08:30"}, {"id": "i2464", "row": 2473, "date": "24-Oct", "sid": "SS-2431", "stype": "Symposium", "stitle": "HIV updates for Non-specialists and Specialists Alike​", "swin": "13:45-15:00", "winStart": 825, "winEnd": 900, "aid": "SS-2431.1", "title": "Innovations and Guideline Updates", "author": "Hansel Tookes", "affil": "Academic / Other", "cat": "HIV", "prio": "High", "room": "BALLROOM ABC", "isPoster": false, "isVirtual": false, "isIndustry": false, "start": 825, "commitStart": 825, "commitEnd": 850, "timeLabel": "13:45–14:10"}, {"id": "i2561", "row": 2570, "date": "24-Oct", "sid": "SS-2451", "stype": "Symposium", "stitle": "May Past not be Prologue: Insights from Current and Past HIV/Hepatitis C Clusters to Prevent Future Outbreaks", "swin": "15:15-16:30", "winStart": 915, "winEnd": 990, "aid": "SS-2451.4", "title": "Implementing Long-Acting Antiretrovirals during HIV Clusters and Outbreaks: Clinical Insights from the Field", "author": "Rupa R. Patel", "affil": "Academic / Other", "cat": "HIV", "prio": "Medium", "room": "204 ABC", "isPoster": false, "isVirtual": false, "isIndustry": false, "start": 960, "commitStart": 960, "commitEnd": 990, "timeLabel": "16:00–16:30"}, {"id": "i2594", "row": 2603, "date": "24-Oct", "sid": "RF-2429", "stype": "Rapid-Fire Poster", "stitle": "Rapid Fire Poster Session: Big Data, Big Insights in HIV", "swin": "12:15-12:45", "winStart": 735, "winEnd": 765, "aid": "RF-2429.8", "title": "Changes in Pre‑Exposure Prophylaxis (PrEP) Cost Sharing and HIV Diagnoses Following United States Preventive Services Task Force (USPSTF) and Affordable Care Act (ACA) Coverage Milestones: An Interrupted Time Series Analysis", "author": "Li Tao", "affil": "Gilead Sciences", "cat": "HIV", "prio": "Medium", "room": "RF Arena 1", "isPoster": false, "isVirtual": false, "isIndustry": true, "start": 745, "commitStart": 745, "commitEnd": 750, "timeLabel": "12:25–12:30"}, {"id": "i2595", "row": 2604, "date": "24-Oct", "sid": "RF-2429", "stype": "Rapid-Fire Poster", "stitle": "Rapid Fire Poster Session: Big Data, Big Insights in HIV", "swin": "12:15-12:45", "winStart": 735, "winEnd": 765, "aid": "RF-2429.4", "title": "Routine HIV Screening to Prevention Services: Diversifying Linkage to HIV Prevention Services across 98 Emergency Departments, Community Health Centers, and High Impact Settings", "author": "Carol Vincent", "affil": "Gilead Sciences", "cat": "HIV", "prio": "Medium", "room": "RF Arena 1", "isPoster": false, "isVirtual": false, "isIndustry": true, "start": 750, "commitStart": 750, "commitEnd": 760, "timeLabel": "12:30–12:40"}, {"id": "i2641", "row": 2650, "date": "24-Oct", "sid": "OA-2454", "stype": "Oral Abstract", "stitle": "This Just In: New Models of Care for HIV Treatment & Care", "swin": "15:15-16:30", "winStart": 915, "winEnd": 990, "aid": "OA-2454.6", "title": "ACCELERATE – A Multi-site, Effectiveness-Implementation Study to Evaluate Rapid ART Restart for People with HIV Who are Out of Care", "author": "Dima Dandachi", "affil": "Gilead Sciences", "cat": "HIV", "prio": "Medium", "room": "102 AB", "isPoster": false, "isVirtual": false, "isIndustry": true, "start": 975, "commitStart": 975, "commitEnd": 990, "timeLabel": "16:15–16:30"}, {"id": "i2645", "row": 2654, "date": "24-Oct", "sid": "OA-2454", "stype": "Oral Abstract", "stitle": "This Just In: New Models of Care for HIV Treatment & Care", "swin": "15:15-16:30", "winStart": 915, "winEnd": 990, "aid": "OA-2454.4", "title": "Rapid initiation and re-initiation of antiretroviral therapy (ART) in individuals in custody", "author": "Melissa E. Badowski", "affil": "Academic / Other", "cat": "HIV", "prio": "Medium", "room": "102 AB", "isPoster": false, "isVirtual": false, "isIndustry": false, "start": 951, "commitStart": 951, "commitEnd": 963, "timeLabel": "15:51–16:03"}], "sessions": [{"date": "21-Oct", "stitle": "Advancing a Panviral Approach to HDV, HCV, HBV and HIV Prevention and Treatment", "winStart": 660, "winEnd": 750, "sid": "IEE-6", "stype": "Industry / ancillary event", "room": "Archives", "items": ["i396"]}, {"date": "21-Oct", "stitle": "A Switch in Time: State-of-the-Art Strategies for ART Modification in People with Virologically Suppressed HIV", "winStart": 1140, "winEnd": 1230, "sid": "IEE-8", "stype": "Industry / ancillary event", "room": "Independence Salon A+B+C+D", "items": ["i395"]}, {"date": "21-Oct", "stitle": "Voice of the ART (ists)", "winStart": 1140, "winEnd": 1260, "sid": "IEE-9", "stype": "Industry / ancillary event", "room": "Archives", "items": ["i475"]}, {"date": "22-Oct", "stitle": "Advances in HIV Prevention: The future is now", "winStart": 420, "winEnd": 480, "sid": "IEE-12", "stype": "Industry / ancillary event", "room": "Marquis Salon 12+13", "items": ["i639"]}, {"date": "22-Oct", "stitle": "Rapid Fire Poster Session: Just Do It: Pushing The boundaries of HIV Prevention & Treatment", "winStart": 735, "winEnd": 765, "sid": "RF-2230", "stype": "Rapid-Fire Poster", "room": "RF Arena 1", "items": ["i1244", "i1242"]}, {"date": "22-Oct", "stitle": "Paired With Intention: Explore the data behind a novel HIV treatment combination for those on complex regimens or may feel left behind by advances in HIV treatment.", "winStart": 735, "winEnd": 780, "sid": "LL4-S3", "stype": "Industry / ancillary event", "room": "Learning Lounge 4", "items": ["i1225"]}, {"date": "22-Oct", "stitle": "A1. Novel Agents", "winStart": 735, "winEnd": 810, "sid": "A1", "stype": "Poster", "room": "Poster Hall B-C", "items": ["i501", "i505"]}, {"date": "22-Oct", "stitle": "A3. Resistance mechanisms", "winStart": 735, "winEnd": 810, "sid": "P - 82", "stype": "Poster", "room": "Poster Hall B-C", "items": ["i558"]}, {"date": "22-Oct", "stitle": "Challenging HIV Treatment and Prevention Clinical Cases​", "winStart": 825, "winEnd": 900, "sid": "IS-2244", "stype": "Interactive Session", "room": "BALLROOM ABC", "items": ["i664", "i665", "i666"]}, {"date": "22-Oct", "stitle": "State of the Art HIV Treatment", "winStart": 915, "winEnd": 990, "sid": "SS-2248", "stype": "Symposium", "room": "147 AB", "items": ["i1264", "i1263", "i1265"]}, {"date": "22-Oct", "stitle": "Optimizing Outcomes with LAI PrEP and ART: Advanced Clinical Decision Making in HIV Care - An Interactive Showcase™", "winStart": 1110, "winEnd": 1230, "sid": "IEE-15", "stype": "Industry / ancillary event", "room": "Marquis Salon 6", "items": ["i1100"]}, {"date": "23-Oct", "stitle": "Coffee, Croissants, and Capsids, Oh My!", "winStart": 420, "winEnd": 510, "sid": "IEE-16", "stype": "Industry / ancillary event", "room": "Marquis Salon 5", "items": ["i1342"]}, {"date": "23-Oct", "stitle": "Squabbles Among Friends: Pushing the Envelope on HIV Treatment and Prevention", "winStart": 630, "winEnd": 705, "sid": "DS-2323", "stype": "Debate-Style Session", "room": "202 AB", "items": ["i2018"]}, {"date": "23-Oct", "stitle": "A Treatment for Appropriate Adults Living With HIV-1", "winStart": 675, "winEnd": 720, "sid": "LL1-S6", "stype": "Industry / ancillary event", "room": "Learning Lounge 1", "items": ["i1299"]}, {"date": "23-Oct", "stitle": "Learn About a PrEP Injectable Option", "winStart": 735, "winEnd": 780, "sid": "LL4-S7", "stype": "Industry / ancillary event", "room": "Learning Lounge 4", "items": ["i1718"]}, {"date": "23-Oct", "stitle": "E. Infectious Diseases Medical Education (scholarly work directed at enhancing infectious diseases education of trainees and/or health professionals, social determinants of health)", "winStart": 735, "winEnd": 810, "sid": "E", "stype": "Poster", "room": "Poster Hall B-C", "items": ["i1354", "i1360", "i1372"]}, {"date": "23-Oct", "stitle": "H1. HIV: Epidemiology and screening", "winStart": 735, "winEnd": 810, "sid": "H1", "stype": "Poster", "room": "Poster Hall B-C", "items": ["i1442", "i1439"]}, {"date": "23-Oct", "stitle": "H2. HIV: Prevention", "winStart": 735, "winEnd": 810, "sid": "H2", "stype": "Poster", "room": "Poster Hall B-C", "items": ["i1484", "i1499", "i1479", "i1494", "i1474", "i1448", "i1483", "i1470", "i1461", "i1472", "i1453", "i1475", "i1471", "i1458"]}, {"date": "23-Oct", "stitle": "H4. HIV: Treatment", "winStart": 735, "winEnd": 810, "sid": "H4", "stype": "Poster", "room": "Poster Hall B-C", "items": ["i1567", "i1541", "i1523", "i1549", "i1561", "i1542", "i1580", "i1559", "i1528", "i1571", "i1526", "i1535", "i1529", "i1531", "i1566", "i1539", "i1579", "i1554", "i1548", "i1521", "i1519"]}, {"date": "23-Oct", "stitle": "H5. HIV: Complications and co-infections", "winStart": 735, "winEnd": 810, "sid": "H5", "stype": "Poster", "room": "Poster Hall B-C", "items": ["i1606", "i1612", "i1585"]}, {"date": "23-Oct", "stitle": "Hot Off the Press: New Pathways in HIV Treatment", "winStart": 825, "winEnd": 900, "sid": "OA-2337", "stype": "Oral Abstract", "room": "103 AB", "items": ["i1631", "i1634", "i1635"]}, {"date": "23-Oct", "stitle": "State of the ART HIV Prevention", "winStart": 915, "winEnd": 990, "sid": "SS-2348", "stype": "Symposium", "room": "202 AB", "items": ["i2022", "i2024", "i2023"]}, {"date": "24-Oct", "stitle": "Cancer Prevention and Screening for People Living with HIV", "winStart": 480, "winEnd": 540, "sid": "MP-2406", "stype": "Meet-the-Professor", "room": "152 AB", "items": ["i2368"]}, {"date": "24-Oct", "stitle": "Breaking News: Scaling Up HIV Prevention", "winStart": 630, "winEnd": 705, "sid": "OA-2418", "stype": "Oral Abstract", "room": "102 AB", "items": ["i2139", "i2142"]}, {"date": "24-Oct", "stitle": "Rapid Fire Poster Session: Big Data, Big Insights in HIV", "winStart": 735, "winEnd": 765, "sid": "RF-2429", "stype": "Rapid-Fire Poster", "room": "RF Arena 1", "items": ["i2594", "i2595"]}, {"date": "24-Oct", "stitle": "C1. Clinical trials", "winStart": 735, "winEnd": 810, "sid": "P - 231", "stype": "Poster", "room": "Poster Hall B-C", "items": ["i2165"]}, {"date": "24-Oct", "stitle": "HIV updates for Non-specialists and Specialists Alike​", "winStart": 825, "winEnd": 900, "sid": "SS-2431", "stype": "Symposium", "room": "BALLROOM ABC", "items": ["i2464"]}, {"date": "24-Oct", "stitle": "This Just In: New Models of Care for HIV Treatment & Care", "winStart": 915, "winEnd": 990, "sid": "OA-2454", "stype": "Oral Abstract", "room": "102 AB", "items": ["i2645", "i2641"]}, {"date": "24-Oct", "stitle": "May Past not be Prologue: Insights from Current and Past HIV/Hepatitis C Clusters to Prevent Future Outbreaks", "winStart": 915, "winEnd": 990, "sid": "SS-2451", "stype": "Symposium", "room": "204 ABC", "items": ["i2561"]}], "dates": ["21-Oct", "22-Oct", "23-Oct", "24-Oct"], "priorities": ["High", "Medium"], "team": ["Yi", "Deepak"], "year": 2026, "dayLabels": {"20-Oct": "Tue 20 Oct", "21-Oct": "Wed 21 Oct", "22-Oct": "Thu 22 Oct", "23-Oct": "Fri 23 Oct", "24-Oct": "Sat 24 Oct"}, "categories": [["HIV", 79], ["HIV/broad infections", 1]]};</script>
+<script>
+(function(){
+"use strict";
+var D = window.__DATA__, IT = {}, i, j;
+for(i=0;i<D.items.length;i++) IT[D.items[i].id]=D.items[i];
+var DAYLAB=(D.dayLabels&&typeof D.dayLabels==='object')?D.dayLabels:{};
+function hhmm(m){return ('0'+Math.floor(m/60)).slice(-2)+':'+('0'+(m%60)).slice(-2);}
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function laneOf(it){return it.isPoster&&!it.isVirtual?'Poster halls':(it.isVirtual?'Virtual posters':it.room);}
+function pcls(p){return p==='High'?'hi':'me';}
+
+var S={day:'all',prio:'all',cats:{},ncat:0,ind:false,conc:false,cov:'all',q:''};
+
+/* ---------------- annotation store ---------------- */
+/* ---- SHARED SAVING ----------------------------------------------------
+   Already pointed at your Cloudflare Worker. Nothing to edit.
+   Emptying the quotes would make the planner save on each device only. */
+var SYNC_URL='https://idweek-coverage.mguo-044.workers.dev/api/coverage';
+
+var TEAM=(D.team&&D.team.length)?D.team.slice():['Hemal','Matthew','Fatemeh','Zoya','Brendan','ChrisO','Yi','ChrisD'];
+var SKEY='shifthealth.idweek.planner.v1', ST={v:1,people:TEAM.slice(),ann:{}}, STOK=true;
+var SYNCST='', PKEY='shifthealth.idweek.pending.v1', PEND={}, TIMERS={};
+try{var _p=window.localStorage.getItem(PKEY); if(_p) PEND=JSON.parse(_p)||{};}catch(e){}
+function keyOf(it){return it.date+'|'+it.aid;}
+/* keys this planner actually shows - the shared store may hold others */
+var MYKEYS={};
+for(var _k=0;_k<D.items.length;_k++) MYKEYS[keyOf(D.items[_k])]=1;
+function loadStore(){
+  try{var raw=window.localStorage.getItem(SKEY);
+    if(raw){var p=JSON.parse(raw);
+      if(p&&typeof p==='object'){
+        ST.people=TEAM.slice();
+        if(Array.isArray(p.people)) for(var q=0;q<p.people.length;q++)
+          if(ST.people.indexOf(p.people[q])<0) ST.people.push(p.people[q]);
+        ST.ann=(p.ann&&typeof p.ann==='object')?p.ann:{};}}
+  }catch(e){STOK=false;}
+}
+function saveStore(){
+  try{window.localStorage.setItem(SKEY,JSON.stringify(ST));}catch(e){STOK=false;showStoreWarn();}
+}
+function showStoreWarn(){
+  if(document.getElementById('swarn')) return;
+  var d=document.createElement('div');d.className='warnbar';d.id='swarn';
+  d.textContent='This browser is not saving coverage and notes. Use Export to keep your work.';
+  var p=document.getElementById('panel');p.parentNode.insertBefore(d,p);
+}
+function annOf(it){return ST.ann[keyOf(it)]||null;}
+function effOwner(it){var a=ST.ann[keyOf(it)];return (a&&a.o)||'';}
+function effNote(it){var a=ST.ann[keyOf(it)];return (a&&a.n)||'';}
+function setAnn(k,field,val){
+  var a=ST.ann[k]||{};
+  if(val) a[field]=val; else delete a[field];
+  if(a.o||a.n) ST.ann[k]=a; else delete ST.ann[k];
+  saveStore(); pushItem(k);
+}
+
+/* ---------------- shared sync (only when SYNC_URL is set) ---------------- */
+function setSync(msg){SYNCST=msg;var e=document.getElementById('syncst');if(e)e.textContent=msg;}
+function savePending(){try{window.localStorage.setItem(PKEY,JSON.stringify(PEND));}catch(e){}}
+function pendCount(){var n=0,k;for(k in PEND)n++;return n;}
+function syncMsg(){
+  var n=pendCount();
+  setSync(n?('Not saved yet \u2014 '+n+' change'+(n===1?'':'s')+' pending'):'Saved for everyone');
+}
+function busy(){
+  var a=document.activeElement;
+  return !!(a&&a.classList&&(a.classList.contains('ann-n')||a.classList.contains('ann-o')));
+}
+/* one request per item, so two people editing different sessions never collide */
+function pushItem(k){
+  if(!SYNC_URL||typeof fetch!=='function') return;
+  var a=ST.ann[k]||{};
+  PEND[k]={o:a.o||'',n:a.n||''};
+  savePending(); setSync('Saving\u2026');
+  if(TIMERS[k]) clearTimeout(TIMERS[k]);
+  TIMERS[k]=setTimeout(function(){flushOne(k);},800);
+}
+function flushOne(k){
+  var body=PEND[k]; if(!body||!SYNC_URL||typeof fetch!=='function') return;
+  fetch(SYNC_URL,{method:'POST',headers:{'Content-Type':'text/plain'},
+                  body:JSON.stringify({k:k,o:body.o,n:body.n})})
+    .then(function(r){if(!r.ok)throw 0; delete PEND[k]; savePending(); syncMsg();})
+    .catch(function(){syncMsg();});
+}
+function flushAll(){for(var k in PEND) flushOne(k);}
+function pullRemote(first){
+  if(!SYNC_URL||typeof fetch!=='function') return;
+  fetch(SYNC_URL,{cache:'no-store'}).then(function(r){return r.ok?r.json():null;}).then(function(p){
+    if(!p||typeof p!=='object'||!p.ann) return;
+    if(busy()) return;
+    var merged={},k,e,a;
+    for(k in p.ann){e=p.ann[k];a={};if(e&&e.o)a.o=e.o;if(e&&e.n)a.n=e.n;if(a.o||a.n)merged[k]=a;}
+    for(k in PEND){a={};if(PEND[k].o)a.o=PEND[k].o;if(PEND[k].n)a.n=PEND[k].n;
+      if(a.o||a.n) merged[k]=a; else delete merged[k];}
+    if(JSON.stringify(merged)===JSON.stringify(ST.ann)&&!first){syncMsg();return;}
+    ST.ann=merged;
+    for(k in ST.ann){ if(!MYKEYS[k]) continue; var ow=ST.ann[k].o; if(ow&&ST.people.indexOf(ow)<0) ST.people.push(ow);}
+    saveStore(); syncMsg(); renderCovRow(); render();
+  }).catch(function(){setSync('Offline \u2014 working from this device');});
+}
+
+/* ---------------- filtering ---------------- */
+function base(){
+  var q=S.q.trim().toLowerCase(), out=[];
+  for(var k=0;k<D.items.length;k++){
+    var it=D.items[k];
+    if(S.day!=='all' && it.date!==S.day) continue;
+    if(S.prio!=='all' && it.prio!==S.prio) continue;
+    if(S.ncat>0 && !S.cats[it.cat]) continue;
+    if(S.ind && !it.isIndustry) continue;
+    if(S.cov!=='all'){
+      var _o=effOwner(it);
+      if(S.cov==='__none'){ if(_o) continue; }
+      else if(_o!==S.cov) continue;
+    }
+    if(q){
+      var hay=(it.title+' '+it.author+' '+it.stitle+' '+it.aid+' '+it.affil).toLowerCase();
+      if(hay.indexOf(q)<0) continue;
+    }
+    out.push(it);
+  }
+  return out;
+}
+
+/* ---------------- computed notes (live, from visible set) ---------------- */
+function computeBands(list){
+  var byDay={},k;
+  for(k=0;k<list.length;k++){ if(list[k].isVirtual) continue;
+    (byDay[list[k].date]=byDay[list[k].date]||[]).push(list[k]); }
+  var res={};
+  for(var d in byDay){
+    var day=byDay[d], pts={}, p=[];
+    for(k=0;k<day.length;k++){pts[day[k].commitStart]=1;pts[day[k].commitEnd]=1;}
+    for(var t in pts) p.push(+t); p.sort(function(a,b){return a-b;});
+    var raw=[];
+    for(k=0;k<p.length-1;k++){
+      var a=p[k],b=p[k+1],seen={},rooms=[];
+      for(j=0;j<day.length;j++) if(day[j].commitStart<b&&day[j].commitEnd>a){
+        var L=laneOf(day[j]); if(!seen[L]){seen[L]=1;rooms.push(L);} }
+      if(rooms.length>=2){rooms.sort();raw.push({a:a,b:b,rooms:rooms});}
+    }
+    var mg=[];
+    for(k=0;k<raw.length;k++){
+      var last=mg[mg.length-1];
+      if(last && last.b===raw[k].a && last.rooms.join('|')===raw[k].rooms.join('|')) last.b=raw[k].b;
+      else mg.push({a:raw[k].a,b:raw[k].b,rooms:raw[k].rooms.slice()});
+    }
+    for(k=0;k<mg.length;k++){
+      var bd=mg[k]; bd.detail=[];
+      for(var r=0;r<bd.rooms.length;r++){
+        var n=0,h=0;
+        for(j=0;j<day.length;j++) if(laneOf(day[j])===bd.rooms[r]&&day[j].commitStart<bd.b&&day[j].commitEnd>bd.a){
+          n++; if(day[j].prio==='High') h++; }
+        bd.detail.push({room:bd.rooms[r],n:n,high:h});
+      }
+    }
+    res[d]=mg;
+  }
+  return res;
+}
+function computeSqueeze(list){
+  var byDay={},k;
+  for(k=0;k<list.length;k++){ if(list[k].isVirtual) continue;
+    (byDay[list[k].date]=byDay[list[k].date]||[]).push(list[k]); }
+  var out=[];
+  for(var d in byDay){
+    var day=byDay[d],pw=[],timed=[];
+    for(k=0;k<day.length;k++) (day[k].isPoster?pw:timed).push(day[k]);
+    if(!pw.length) continue;
+    var ws=pw[0].winStart,we=pw[0].winEnd,ov=[];
+    for(k=0;k<timed.length;k++){
+      var s=Math.max(ws,timed[k].commitStart),e=Math.min(we,timed[k].commitEnd);
+      if(e>s) ov.push([s,e]);
+    }
+    ov.sort(function(a,b){return a[0]-b[0];});
+    var mg=[];
+    for(k=0;k<ov.length;k++){
+      if(mg.length&&ov[k][0]<=mg[mg.length-1][1]) mg[mg.length-1][1]=Math.max(mg[mg.length-1][1],ov[k][1]);
+      else mg.push([ov[k][0],ov[k][1]]);
+    }
+    var lost=0; for(k=0;k<mg.length;k++) lost+=mg[k][1]-mg[k][0];
+    var surv=(we-ws)-lost;
+    out.push({date:d,ws:ws,we:we,total:we-ws,lost:lost,surv:surv,boards:pw.length,
+              per:pw.length?surv/pw.length:0});
+  }
+  out.sort(function(a,b){return D.dates.indexOf(a.date)-D.dates.indexOf(b.date);});
+  return out;
+}
+function computeTight(list){
+  var byDay={},k;
+  for(k=0;k<list.length;k++){ if(list[k].isVirtual) continue;
+    (byDay[list[k].date]=byDay[list[k].date]||[]).push(list[k]); }
+  var out=[];
+  for(var d in byDay){
+    var day=byDay[d];
+    for(k=0;k<day.length;k++) for(j=0;j<day.length;j++){
+      if(laneOf(day[k])===laneOf(day[j])) continue;
+      var gap=day[j].commitStart-day[k].commitEnd;
+      if(gap>=0&&gap<10) out.push({date:d,from:day[k],to:day[j],gap:gap});
+    }
+  }
+  out.sort(function(a,b){return (D.dates.indexOf(a.date)-D.dates.indexOf(b.date))||(a.from.commitEnd-b.from.commitEnd);});
+  return out;
+}
+
+/* ---------------- coverage chips ---------------- */
+function renderCovRow(){
+  var h='<span class="flab">Coverage</span><select class="chip" id="f-cov" aria-label="Filter by coverage">'+
+        '<option value="all"'+(S.cov==='all'?' selected':'')+'>All coverage</option>'+
+        '<option value="__none"'+(S.cov==='__none'?' selected':'')+'>Unassigned</option>';
+  for(var k=0;k<ST.people.length;k++){
+    var p=ST.people[k];
+    h+='<option value="'+esc(p)+'"'+(S.cov===p?' selected':'')+'>'+esc(p)+'</option>';
+  }
+  h+='</select><span class="syncst" id="syncst">'+esc(SYNCST)+'</span>';
+  document.getElementById('cov-row').innerHTML=h;
+}
+function ownerOptions(sel){
+  var h='<option value="">Unassigned</option>';
+  for(var k=0;k<ST.people.length;k++){
+    var p=ST.people[k];
+    h+='<option value="'+esc(p)+'"'+(p===sel?' selected':'')+'>'+esc(p)+'</option>';
+  }
+  return h;
+}
+
+/* ---------------- render: coverage panel ---------------- */
+function renderPanel(bands,sq,tight){
+  var h='',k,r,any=false,nb=0;
+  for(var dz in bands) nb+=bands[dz].length;
+  var rows=[];
+  for(var d in bands) for(k=0;k<bands[d].length;k++){
+    var bd=bands[d][k],parts=[];
+    for(r=0;r<bd.detail.length;r++)
+      parts.push(esc(bd.detail[r].room)+' ('+bd.detail[r].n+' item'+(bd.detail[r].n===1?'':'s')+', '+bd.detail[r].high+' high)');
+    rows.push({d:d,a:bd.a,html:'<b>'+esc(DAYLAB[d]||d)+' '+hhmm(bd.a)+'–'+hhmm(bd.b)+'</b> — '+parts.join(' · ')+
+      ' <span class="cost">'+(bd.b-bd.a)+' min</span>'});
+  }
+  rows.sort(function(a,b){return (D.dates.indexOf(a.d)-D.dates.indexOf(b.d))||(a.a-b.a);});
+  h+='<h3>Concurrent — split between people</h3>';
+  if(rows.length){any=true;h+='<ul>';for(k=0;k<rows.length;k++)h+='<li>'+rows[k].html+'</li>';h+='</ul>';}
+  else h+='<p class="none">Nothing running concurrently in the current view.</p>';
+
+  h+='<h3>Squeezed poster window</h3>';
+  if(sq.length){any=true;h+='<ul>';
+    for(k=0;k<sq.length;k++){var s=sq[k];
+      h+='<li><b>'+esc(DAYLAB[s.date]||s.date)+' '+hhmm(s.ws)+'–'+hhmm(s.we)+'</b> — '+
+        s.surv+' of '+s.total+' board minutes survive across '+s.boards+' board'+(s.boards===1?'':'s')+
+        ' = <b>'+s.per.toFixed(1)+' min per board</b> <span class="cost">'+s.lost+' min lost</span></li>';}
+    h+='</ul>';}
+  else h+='<p class="none">No poster window in the current view.</p>';
+
+  h+='<h3>Allocation</h3>';
+  var alloc={},unass=0,unassH=0,vis=arguments[3]||[];
+  for(k=0;k<vis.length;k++){
+    var ov=effOwner(vis[k]);
+    if(!ov){unass++; if(vis[k].prio==='High') unassH++; continue;}
+    if(!alloc[ov]) alloc[ov]={n:0,hi:0};
+    alloc[ov].n++; if(vis[k].prio==='High') alloc[ov].hi++;
+  }
+  var pl=[];for(var pn in alloc) pl.push(pn);
+  pl.sort(function(a,b){return alloc[b].n-alloc[a].n||a.localeCompare(b);});
+  h+='<ul>';
+  for(k=0;k<pl.length;k++)
+    h+='<li><b>'+esc(pl[k])+'</b> — '+alloc[pl[k]].n+' item'+(alloc[pl[k]].n===1?'':'s')+
+       ', '+alloc[pl[k]].hi+' high</li>';
+  h+='<li><b>Unassigned</b> — '+unass+' item'+(unass===1?'':'s')+', '+unassH+' high</li></ul>';
+
+  h+='<h3>Tight transitions (under 10 min)</h3>';
+  if(tight.length){any=true;h+='<ul>';
+    for(k=0;k<tight.length;k++){var t=tight[k];
+      h+='<li><b>'+esc(DAYLAB[t.date]||t.date)+'</b> — '+esc(t.from.aid)+' ('+esc(laneOf(t.from))+
+        ') ends '+hhmm(t.from.commitEnd)+' → '+esc(t.to.aid)+' ('+esc(laneOf(t.to))+') starts '+
+        hhmm(t.to.commitStart)+' <span class="cost">'+t.gap+' min</span></li>';}
+    h+='</ul>';}
+  else h+='<p class="none">No transition under 10 minutes in the current view.</p>';
+  var bits=[nb+' concurrent', sq.length+' poster squeeze'+(sq.length===1?'':'s'),
+            tight.length+' tight transition'+(tight.length===1?'':'s')];
+  var pel=document.getElementById('panel'), wasOpen=pel.open;
+  pel.innerHTML='<summary>Coverage &amp; splits <span class="sm">&mdash; '+bits.join(' &middot; ')+
+                '</span></summary><div class="pbody">'+h+'</div>';
+  pel.open=wasOpen;
+  return any;
+}
+
+/* ---------------- render: timelines ---------------- */
+function dayRange(day){
+  var lo=1e9,hi=-1e9;
+  for(var k=0;k<day.length;k++){lo=Math.min(lo,day[k].commitStart);hi=Math.max(hi,day[k].commitEnd);}
+  lo=Math.floor(lo/60)*60; hi=Math.ceil(hi/60)*60;
+  if(hi-lo<60) hi=lo+60;
+  return [lo,hi];
+}
+function axisHTML(lo,hi){
+  var h='';
+  for(var t=lo;t<=hi;t+=60) h+='<span style="left:'+(((t-lo)/(hi-lo))*100).toFixed(3)+'%">'+hhmm(t)+'</span>';
+  return h;
+}
+function laneTimeline(date,day,bands){
+  var lo=dayRange(day),hi=lo[1];lo=lo[0];var span=hi-lo,k,j;
+  function pc(a,b){return {l:((a-lo)/span*100).toFixed(3),w:(Math.max(b-a,1)/span*100).toFixed(3)};}
+  var lanes={},order=[];
+  for(k=0;k<day.length;k++){var L=laneOf(day[k]); if(!lanes[L]){lanes[L]=[];order.push(L);} lanes[L].push(day[k]);}
+  order.sort(function(a,b){
+    var ra=a==='Poster halls'?1:(a==='Virtual posters'?2:0), rb=b==='Poster halls'?1:(b==='Virtual posters'?2:0);
+    return ra-rb || a.localeCompare(b,undefined,{numeric:true});});
+  var h='<div class="tl"><div class="axis">'+axisHTML(lo,hi)+'</div>';
+  h+='<div class="lanes"><div class="bandlayer">';
+  for(k=0;k<bands.length;k++){var g2=pc(bands[k].a,bands[k].b);
+    h+='<div class="band" style="left:'+g2.l+'%;width:'+g2.w+'%"></div>';}
+  h+='</div>';
+  for(var o=0;o<order.length;o++){
+    var L=order[o],list=lanes[L];
+    h+='<div class="lane"><div class="lname">'+esc(L)+'</div><div class="track">';
+    var bySess={};
+    for(k=0;k<list.length;k++){
+      var it=list[k],g3=pc(it.commitStart,it.commitEnd);
+      var cls=it.isPoster?'po':pcls(it.prio);
+      h+='<button class="blk '+cls+'" data-id="'+it.id+'" style="left:'+g3.l+'%;width:'+g3.w+'%" '+
+         'title="'+esc(it.aid+' · '+it.title)+'">'+esc(it.aid)+'</button>';
+      if(!it.isPoster) (bySess[it.date+'|'+it.sid]=bySess[it.date+'|'+it.sid]||[]).push(it);
+    }
+    for(var sk in bySess){
+      var segs=bySess[sk]; if(segs.length<2) continue;
+      segs.sort(function(a,b){return a.commitStart-b.commitStart;});
+      var a0=segs[0].commitStart,b0=segs[segs.length-1].commitEnd,g4=pc(a0,b0);
+      h+='<div class="rail" style="left:'+g4.l+'%;width:'+g4.w+'%"></div>';
+      for(j=1;j<segs.length;j++){var g5=pc(segs[j].commitStart,segs[j].commitStart);
+        h+='<div class="tick" style="left:'+g5.l+'%"></div>';}
+    }
+    h+='</div></div>';
+  }
+  h+='</div><div class="cap" id="cap-'+date+'"></div></div>';
+  return h;
+}
+function ribbon(date,day,bands){
+  var r=dayRange(day),lo=r[0],hi=r[1],span=hi-lo,k,j;
+  function pc(a,b){return {l:((a-lo)/span*100).toFixed(3),w:(Math.max(b-a,1)/span*100).toFixed(3)};}
+  var pts={};
+  for(k=0;k<day.length;k++){pts[day[k].commitStart]=1;pts[day[k].commitEnd]=1;}
+  var p=[];for(var t in pts)p.push(+t);p.sort(function(a,b){return a-b;});
+  var h='<div class="ribbon"><div class="rbaxis">'+axisHTML(lo,hi)+'</div><div class="rbbands">';
+  for(k=0;k<bands.length;k++){var gb=pc(bands[k].a,bands[k].b);
+    h+='<div class="band" style="left:'+gb.l+'%;width:'+gb.w+'%"></div>';}
+  h+='</div><div class="rbtrack">';
+  for(k=0;k<p.length-1;k++){
+    var a=p[k],b=p[k+1],ids=[],hasHigh=false,hasTimed=false;
+    for(j=0;j<day.length;j++) if(day[j].commitStart<b&&day[j].commitEnd>a){
+      ids.push(day[j].id); if(day[j].prio==='High')hasHigh=true; if(!day[j].isPoster)hasTimed=true;}
+    if(!ids.length) continue;
+    var cls=!hasTimed?'po':(hasHigh?'hi':'me'),g=pc(a,b);
+    h+='<button class="rbseg '+cls+'" data-seg="'+ids.join(',')+'" data-date="'+date+'" '+
+       'style="left:'+g.l+'%;width:'+g.w+'%" aria-label="'+hhmm(a)+' to '+hhmm(b)+', '+ids.length+' items"></button>';
+  }
+  h+='</div><div class="rblab">Tap a block for detail. Hatched = poster window.</div>'+
+     '<div class="cap" id="rcap-'+date+'"></div></div>';
+  return h;
+}
+
+/* ---------------- render: list ---------------- */
+function renderDays(list,bands,tight){
+  var byDay={},k;
+  for(k=0;k<list.length;k++) (byDay[list[k].date]=byDay[list[k].date]||[]).push(list[k]);
+  var tightIds={};
+  for(k=0;k<tight.length;k++){tightIds[tight[k].from.id]=1;tightIds[tight[k].to.id]=1;}
+  var concIds={};
+  for(var d0 in bands) for(k=0;k<bands[d0].length;k++){
+    var bd=bands[d0][k],day0=byDay[d0]||[];
+    for(var j0=0;j0<day0.length;j0++) if(!day0[j0].isVirtual&&day0[j0].commitStart<bd.b&&day0[j0].commitEnd>bd.a)
+      concIds[day0[j0].id]=1;
+  }
+  var h='';
+  for(var di=0;di<D.dates.length;di++){
+    var date=D.dates[di],day=byDay[date];
+    if(!day||!day.length) continue;
+    if(S.conc){var f=[];for(k=0;k<day.length;k++) if(concIds[day[k].id]) f.push(day[k]); day=f;}
+    if(!day.length) continue;
+    var bd2=bands[date]||[];
+    h+='<section class="day" id="d-'+date+'"><h2>'+esc(DAYLAB[date]||date)+' — '+day.length+' item'+(day.length===1?'':'s')+'</h2>';
+    h+=laneTimeline(date,day,bd2)+ribbon(date,day,bd2);
+    var slots={},sorder=[];
+    for(k=0;k<day.length;k++){
+      var key=day[k].winStart+'|'+day[k].winEnd;
+      if(!slots[key]){slots[key]=[];sorder.push({key:key,a:day[k].winStart,b:day[k].winEnd});}
+      slots[key].push(day[k]);
+    }
+    sorder.sort(function(x,y){return x.a-y.a||x.b-y.b;});
+    for(var si=0;si<sorder.length;si++){
+      var sl=sorder[si],its=slots[sl.key];
+      h+='<div class="slot"><h3>'+hhmm(sl.a)+'–'+hhmm(sl.b)+'</h3>';
+      var notes=[];
+      for(k=0;k<bd2.length;k++) if(bd2[k].a<sl.b&&bd2[k].b>sl.a){
+        var rr=[];for(var q=0;q<bd2[k].detail.length;q++) rr.push(bd2[k].detail[q].room+' ('+bd2[k].detail[q].high+' high)');
+        notes.push('Concurrent '+hhmm(bd2[k].a)+'–'+hhmm(bd2[k].b)+': '+rr.join(' · ')+' — '+(bd2[k].b-bd2[k].a)+' min');
+      }
+      var sqAll=computeSqueeze(day);
+      for(k=0;k<sqAll.length;k++) if(sqAll[k].date===date&&sqAll[k].ws<sl.b&&sqAll[k].we>sl.a&&sqAll[k].lost>0)
+        notes.push('Squeezed poster window: '+sqAll[k].surv+' of '+sqAll[k].total+' board minutes survive across '+
+                   sqAll[k].boards+' boards = '+sqAll[k].per.toFixed(1)+' min per board — '+sqAll[k].lost+' min lost');
+      for(k=0;k<tight.length;k++) if(tight[k].date===date&&tight[k].from.commitEnd>=sl.a&&tight[k].from.commitEnd<=sl.b)
+        notes.push('Tight transition: '+tight[k].from.aid+' → '+tight[k].to.aid+' — '+tight[k].gap+' min');
+      var uniq=[],seen={};
+      for(k=0;k<notes.length;k++) if(!seen[notes[k]]){seen[notes[k]]=1;uniq.push(notes[k]);}
+      if(uniq.length){
+        h+='<details class="notebox"><summary>'+uniq.length+' scheduling note'+(uniq.length===1?'':'s')+
+           '</summary><ul>';
+        for(k=0;k<uniq.length;k++) h+='<li>'+esc(uniq[k])+'</li>';
+        h+='</ul></details>';
+      }
+
+      var groups={},gorder=[];
+      for(k=0;k<its.length;k++){
+        var gk=its[k].stitle+'|'+its[k].winStart+'|'+its[k].winEnd;
+        if(!groups[gk]){groups[gk]=[];gorder.push(gk);}
+        groups[gk].push(its[k]);
+      }
+      gorder.sort(function(x,y){
+        var A=groups[x][0],B=groups[y][0];
+        return A.room.localeCompare(B.room,undefined,{numeric:true})||A.stitle.localeCompare(B.stitle);});
+      for(var gi=0;gi<gorder.length;gi++){
+        var g=groups[gorder[gi]];
+        g.sort(function(a,b){return a.commitStart-b.commitStart||a.aid.localeCompare(b.aid,undefined,{numeric:true});});
+        var rooms={},rl=[];
+        for(k=0;k<g.length;k++) if(!rooms[g[k].room]){rooms[g[k].room]=1;rl.push(g[k].room);}
+        var sidTxt=g[0].sid&&g.length? (function(){var ss={},a=[];for(k=0;k<g.length;k++){var s2=g[k].sid;if(!ss[s2]){ss[s2]=1;a.push(s2);}}return a.length===1?a[0]:'';})():'';
+        h+='<div class="sess"><div class="shd"><div class="smeta">'+
+           (sidTxt?esc(sidTxt)+' &middot; ':'')+esc(g[0].stype)+'</div>'+
+           '<div class="stitle">'+esc(g[0].stitle)+'</div>'+
+           '<div class="sroom">'+esc(rl.join(' / '))+'</div></div>';
+        for(k=0;k<g.length;k++){
+          var it=g[k],cls=pcls(it.prio);
+          h+='<div class="item '+cls+'" id="it-'+it.id+'">'+
+             '<div class="l1">'+esc(it.timeLabel)+' &middot; '+esc(it.room)+' &middot; '+esc(it.aid)+'</div>'+
+             '<div class="ttl">'+esc(it.title)+'</div>'+
+             '<div class="l2">'+esc(it.author||'Presenter TBC')+' &middot; '+
+             (it.isIndustry?'<span class="ind">'+esc(it.affil)+'</span>':esc(it.affil))+
+             ' &middot; '+esc(it.cat)+'</div>';
+          var ak=keyOf(it), ao=effOwner(it), an=effNote(it);
+          h+='<details class="ann"><summary>'+
+             (ao?'<span class="owner">'+esc(ao)+'</span>':'Coverage')+
+             (an?'<span class="notemark">Note</span>':'')+'</summary>'+
+             '<div class="annbody">'+
+             '<select class="ann-o" data-k="'+esc(ak)+'" aria-label="Coverage">'+ownerOptions(ao)+'</select>'+
+             '<textarea class="ann-n" data-k="'+esc(ak)+'" rows="2" placeholder="Note" aria-label="Note">'+esc(an)+'</textarea>'+
+             '</div></details>';
+          if(ao||an) h+='<div class="annprint">'+(ao?'Coverage: '+esc(ao):'')+(ao&&an?' — ':'')+(an?esc(an):'')+'</div>';
+          h+='</div>';
+        }
+        h+='</div>';
+      }
+      h+='</div>';
+    }
+    h+='</section>';
+  }
+  return h||'<div class="empty">No items match the current filters.</div>';
+}
+
+/* ---------------- render all ---------------- */
+function render(){
+  var list=base();
+  var bands=computeBands(list), sq=computeSqueeze(list), tight=computeTight(list);
+  renderPanel(bands,sq,tight,list);
+  var shown=list;
+  if(S.conc){
+    var ok={},k,d;
+    for(d in bands) for(k=0;k<bands[d].length;k++){
+      var bd=bands[d][k];
+      for(var j=0;j<list.length;j++) if(list[j].date===d&&!list[j].isVirtual&&
+        list[j].commitStart<bd.b&&list[j].commitEnd>bd.a) ok[list[j].id]=1;
+    }
+    shown=[];for(k=0;k<list.length;k++) if(ok[list[k].id]) shown.push(list[k]);
+  }
+  document.getElementById('count').innerHTML='<b>'+shown.length+'</b> of '+D.items.length+' shown';
+  document.getElementById('body').innerHTML=renderDays(list,bands,tight);
+  document.getElementById('jump').style.display=(S.day==='all')?'':'none';
+}
+
+/* ---------------- events ---------------- */
+document.addEventListener('click',function(e){
+  var b=e.target.closest? e.target.closest('button,a') : null;
+  if(!b) return;
+  if(b.dataset && b.dataset.day!==undefined){
+    S.day=b.dataset.day; syncGroup('day',b.dataset.day); render();
+    if(S.day!=='all'&&window.scrollTo){try{window.scrollTo(0,0);}catch(_){}} return;}
+  if(b.dataset && b.dataset.prio!==undefined){S.prio=b.dataset.prio;syncGroup('prio',b.dataset.prio);render();return;}
+  if(b.id==='t-ind'){S.ind=!S.ind;b.setAttribute('aria-pressed',S.ind);render();return;}
+  if(b.id==='t-conc'){S.conc=!S.conc;b.setAttribute('aria-pressed',S.conc);render();return;}
+  if(b.classList && b.classList.contains('blk')){
+    var it=IT[b.dataset.id],cap=b.closest('.tl').querySelector('.cap');
+    cap.innerHTML='<b>'+esc(it.timeLabel)+' · '+esc(it.room)+' · '+esc(it.aid)+'</b><br>'+esc(it.title)+
+      '<br>'+esc(it.author||'Presenter TBC')+' · '+esc(it.affil)+' · '+esc(it.cat)+' · '+esc(it.prio);
+    return;}
+  if(b.classList && b.classList.contains('rbseg')){
+    var ids=b.dataset.seg.split(','),cap2=b.closest('.ribbon').querySelector('.cap'),s='',n=0;
+    for(var k=0;k<ids.length&&k<8;k++){var x=IT[ids[k]];
+      s+='<div style="margin-bottom:4px"><b>'+esc(x.timeLabel)+' · '+esc(x.room)+'</b><br>'+
+         esc(x.aid)+' — '+esc(x.title)+' <i>('+esc(x.prio)+')</i></div>';n++;}
+    if(ids.length>n) s+='<div>+'+(ids.length-n)+' more in this block</div>';
+    cap2.innerHTML=s; return;}
+},false);
+document.addEventListener('change',function(e){
+  var t=e.target;
+  if(!t) return;
+  if(t.id==='f-cov'){S.cov=t.value;render();return;}
+  if(t.classList&&t.classList.contains('ann-o')){setAnn(t.dataset.k,'o',t.value);render();}
+},false);
+document.addEventListener('input',function(e){
+  var t=e.target;
+  if(t&&t.classList&&t.classList.contains('ann-n')){
+    setAnn(t.dataset.k,'n',t.value.trim());
+    var d=t.closest('details.ann'); if(d){
+      var s=d.querySelector('summary'),nm=s.querySelector('.notemark');
+      if(t.value.trim()&&!nm){var sp=document.createElement('span');sp.className='notemark';sp.textContent='Note';s.appendChild(sp);}
+      else if(!t.value.trim()&&nm) nm.parentNode.removeChild(nm);
+    }
+  }
+},false);
+if(!STOK) showStoreWarn();
+renderCovRow();
+if(SYNC_URL&&typeof fetch==='function'){ setSync('Connecting…'); flushAll(); pullRemote(true);
+  setInterval(function(){flushAll();pullRemote(false);},20000);
+  window.addEventListener('online',function(){flushAll();pullRemote(false);}); }
+function syncGroup(g,v){
+  var els=document.querySelectorAll('[data-'+g+']');
+  for(var k=0;k<els.length;k++) els[k].setAttribute('aria-pressed', els[k].dataset[g]===v);
+}
+var catBtn=document.getElementById('f-cat-btn'),
+    catMenu=document.getElementById('f-cat-menu'),
+    catLab=document.getElementById('f-cat-lab');
+function catLabel(){
+  var names=[],c;
+  for(c in S.cats) if(S.cats[c]) names.push(c);
+  S.ncat=names.length;
+  catLab.textContent = S.ncat===0 ? 'All' : (S.ncat===1 ? names[0] : S.ncat+' selected');
+  catBtn.setAttribute('aria-pressed', S.ncat>0);
+}
+function setMenu(open){
+  catMenu.hidden=!open;
+  catBtn.setAttribute('aria-expanded',open?'true':'false');
+}
+catBtn.addEventListener('click',function(e){e.stopPropagation();setMenu(catMenu.hidden);});
+catMenu.addEventListener('click',function(e){e.stopPropagation();});
+catMenu.addEventListener('change',function(e){
+  var t=e.target; if(!t||t.type!=='checkbox') return;
+  if(t.checked) S.cats[t.value]=true; else delete S.cats[t.value];
+  catLabel(); render();
+});
+document.getElementById('cat-all').addEventListener('click',function(){
+  var b=catMenu.querySelectorAll('input[type=checkbox]');
+  for(var k=0;k<b.length;k++){b[k].checked=true;S.cats[b[k].value]=true;}
+  catLabel(); render();
+});
+document.getElementById('cat-none').addEventListener('click',function(){
+  var b=catMenu.querySelectorAll('input[type=checkbox]');
+  for(var k=0;k<b.length;k++) b[k].checked=false;
+  S.cats={}; catLabel(); render();
+});
+document.addEventListener('click',function(){ if(!catMenu.hidden) setMenu(false); });
+document.addEventListener('keydown',function(e){
+  if(e.key==='Escape'&&!catMenu.hidden){setMenu(false);catBtn.focus();}
+});
+catLabel();
+document.getElementById('f-q').addEventListener('input',function(){S.q=this.value;render();});
+render();
+})();
+</script>
+
+</body>
+</html>
